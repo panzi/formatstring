@@ -321,6 +321,58 @@ void formatstring::repr_value(std::ostream& out, const std::string& value) {
 }
 
 void formatstring::repr_value(std::ostream& out, const char* value) {
-    (void)out;
-    (void)value;
+    out.put('"');
+    for (; *value; ++ value) {
+        char ch = *value;
+        switch (ch) {
+        case '\0': // 0x00
+            out.write("\\0",2);
+            break;
+
+        case '\a': // 0x07
+            out.write("\\a",2);
+            break;
+
+        case '\b': // 0x08
+            out.write("\\b",2);
+            break;
+
+        case '\t': // 0x09
+            out.write("\\t",2);
+            break;
+
+        case '\n': // 0x0a
+            out.write("\\n",2);
+            break;
+
+        case '\v': // 0x0b
+            out.write("\\v",2);
+            break;
+
+        case '\f': // 0x0c
+            out.write("\\f",2);
+            break;
+
+        case '\r': // 0x0d
+            out.write("\\r",2);
+            break;
+
+        case '"': // 0x22
+            out.write("\\\"",2);
+            break;
+
+        case '?': // 0x3f
+            out.write("\\?",2);
+            break;
+
+        case '\\': // 0x5c
+            out.write("\\\\",2);
+            break;
+
+        default:
+            out.put(ch);
+            break;
+        }
+    }
+    out.put('"');
 }

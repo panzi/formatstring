@@ -12,7 +12,7 @@ namespace formatstring {
     class FormatSpec;
 
     template<typename T>
-    void repr_value(std::ostream& out, T value);
+    void repr_value(std::ostream& out, const T& value);
 
     void repr_value(std::ostream& out, const std::string& value);
     void repr_value(std::ostream& out, const char* value);
@@ -37,50 +37,37 @@ namespace formatstring {
 
     template<std::size_t N, typename... Args>
     struct format_tail {
-        static inline void format(std::ostream& out, const std::tuple<Args...>& value, const FormatSpec& spec) {
-            format_tail<N-1,Args...>::format(out, value, spec);
+        static inline void format(std::ostream& out, const std::tuple<Args...>& value) {
+            format_tail<N-1,Args...>::format(out, value);
             out.write(", ", 2);
-            format_value(out, std::get<N-1>(value), spec);
+            repr_value(out, std::get<N-1>(value));
         }
     };
 
     template<typename... Args>
     struct format_tail<0, Args...> {
-        static inline void format(std::ostream& out, const std::tuple<Args...>& value, const FormatSpec& spec) {
+        static inline void format(std::ostream& out, const std::tuple<Args...>& value) {
             (void)out;
             (void)value;
-            (void)spec;
         }
     };
 
     template<typename... Args>
     struct format_tail<1, Args...> {
-        static inline void format(std::ostream& out, const std::tuple<Args...>& value, const FormatSpec& spec) {
-            format_value(out, std::get<0>(value), spec);
+        static inline void format(std::ostream& out, const std::tuple<Args...>& value) {
+            repr_value(out, std::get<0>(value));
         }
     };
 
     template<typename... Args>
     void format_value(std::ostream& out, const std::tuple<Args...>& value, const FormatSpec& spec, char left = '(', char right = ')') {
         std::stringstream buffer;
-        FormatSpec valspec;
-
-        // only copy what makes sense:
-        valspec.upperCase = spec.upperCase;
-        valspec.alternate = spec.alternate;
-        valspec.precision = spec.precision;
-        valspec.sign      = spec.sign;
-        valspec.type      = spec.type;
 
         buffer.put(left);
-        format_tail<std::tuple_size< std::tuple<Args...> >::value, Args...>::format(buffer, value, valspec);
+        format_tail<std::tuple_size< std::tuple<Args...> >::value, Args...>::format(buffer, value);
         buffer.put(right);
 
-        FormatSpec strspec;
-        strspec.fill      = spec.fill;
-        strspec.alignment = spec.alignment;
-        strspec.width     = spec.width;
-        format_value(out, buffer.str(), strspec);
+        format_value(out, buffer.str(), spec);
     }
 
     template<typename Iter>
@@ -89,33 +76,20 @@ namespace formatstring {
 
         buffer.put(left);
         if (begin != end) {
-            FormatSpec valspec;
-
-            // only copy what makes sense:
-            valspec.upperCase = spec.upperCase;
-            valspec.alternate = spec.alternate;
-            valspec.precision = spec.precision;
-            valspec.sign      = spec.sign;
-            valspec.type      = spec.type;
-
-            format_value(buffer, *begin, valspec);
+            repr_value(buffer, *begin);
 
             for (++ begin; begin != end; ++ begin) {
                 buffer.write(", ", 2);
-                format_value(buffer, *begin, valspec);
+                repr_value(buffer, *begin);
             }
         }
         buffer.put(right);
 
-        FormatSpec strspec;
-        strspec.fill      = spec.fill;
-        strspec.alignment = spec.alignment;
-        strspec.width     = spec.width;
-        format_value(out, buffer.str(), strspec);
+        format_value(out, buffer.str(), spec);
     }
 
     template<typename T>
-    void repr_value(std::ostream& out, T value) {
+    void repr_value(std::ostream& out, const T& value) {
         format_value(out, value, FormatSpec());
     }
 }

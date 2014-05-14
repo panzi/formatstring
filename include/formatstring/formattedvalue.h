@@ -245,6 +245,13 @@ namespace formatstring {
         return val(value).hex();
     }
 
+    /* TODO
+    template<typename T>
+    inline auto repr(const T& value) {
+        return val(value).repr();
+    }
+    */
+
     template<typename OStream, typename Value>
     OStream& operator << (OStream& out, const FormattedValue<Value>& value) {
         value.format(out);

@@ -45,10 +45,10 @@ int main() {
     Format fmt = compile("{}-{:c}");
 
     std::cout << fmt('A', 52) << ' ' << fmt(53, 'B') << '\n';
-    std::cout << format("bla {} {:_^20} {} {:#x} {}\n", vec, arr, std::tuple<std::string,int,bool>("foo", 12, false), std::tuple<int>(0), std::tuple<>());
+    std::cout << format("bla {} {:_^20} {} {} {}\n", vec, arr, std::tuple<std::string,int,bool>("foo\n\t\"\\", 12, false), std::tuple<int>(0), std::tuple<>());
 
     Custom var("foo bar");
-    std::cout << format("{}\n", var);
+    std::cout << format("{}\n", var); // << repr(var) << '\n';
 
     return 0;
 }
