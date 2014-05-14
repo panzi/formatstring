@@ -181,15 +181,13 @@ namespace formatstring {
         FormatSpec m_spec;
     };
 
-    typedef FormattedValue<const char*> FormattedUtf8;
-
     template<typename T>
     inline FormattedValue<T> val(const T& value) {
         return FormattedValue<T>(value, FormatSpec());
     }
 
-    inline FormattedUtf8 val(const char str[]) {
-        return FormattedUtf8(str, FormatSpec());
+    inline FormattedValue<const char*> val(const char str[]) {
+        return FormattedValue<const char*>(str, FormatSpec());
     }
 
     template<typename T>

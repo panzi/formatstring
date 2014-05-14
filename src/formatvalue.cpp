@@ -315,3 +315,12 @@ void formatstring::format_value(std::ostream& out, const std::string& str, const
 void formatstring::format_value(std::ostream& out, const char* str, const FormatSpec& spec) {
     format_string(out, str, spec);
 }
+
+void formatstring::repr_value(std::ostream& out, const std::string& value) {
+    repr_value(out, value.c_str());
+}
+
+void formatstring::repr_value(std::ostream& out, const char* value) {
+    (void)out;
+    (void)value;
+}
