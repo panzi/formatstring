@@ -14,6 +14,21 @@ namespace formatstring {
     template<typename T>
     void repr_value(std::ostream& out, const T& value);
 
+    inline void repr_value(std::ostream& out, bool value) { out << (value ? "true" : "false"); }
+
+    void repr_value(std::ostream& out, char value);
+    inline void repr_value(std::ostream& out, short value) { out << value; }
+    inline void repr_value(std::ostream& out, int value) { out << value; }
+    inline void repr_value(std::ostream& out, long value) { out << value; }
+
+    inline void repr_value(std::ostream& out, unsigned char value) { repr_value(out, (char)value); }
+    inline void repr_value(std::ostream& out, unsigned short value) { out << value; }
+    inline void repr_value(std::ostream& out, unsigned int value) { out << value; }
+    inline void repr_value(std::ostream& out, unsigned long value) { out << value; }
+
+    inline void repr_value(std::ostream& out, float value) { out << value; }
+    inline void repr_value(std::ostream& out, double value) { out << value; }
+
     void repr_value(std::ostream& out, const std::string& value);
     void repr_value(std::ostream& out, const char* value);
 
@@ -89,7 +104,17 @@ namespace formatstring {
     }
 
     template<typename T>
-    void repr_value(std::ostream& out, const T& value) {
+    inline void format_value(std::ostream& out, const T& value, const FormatSpec& spec) {
+        format_value(out, (std::stringstream() << value).str(), spec);
+    }
+
+    template<typename T>
+    inline void repr_value(std::ostream& out, const T& value) {
+        out << value;
+    }
+
+    template<typename... Args>
+    void repr_value(std::ostream& out, const std::tuple<Args...>& value) {
         format_value(out, value, FormatSpec());
     }
 }

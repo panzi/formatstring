@@ -9,17 +9,17 @@
 
 namespace formatstring {
 
-    template<typename T>
-    class FormattedValue : public ValueFormatter<T> {
+    class FormattedValue {
     public:
-        typedef T value_type;
-        typedef ValueFormatter<T> super_type;
-        typedef FormattedValue<T> self_type;
+        template<typename T>
+        FormattedValue(const T& value, Conversion conv = NoConv, const FormatSpec& spec = FormatSpec()) :
+            m_formatter(make_formatter(value)), m_conv(conv), m_spec(spec) {}
 
-        FormattedValue(const value_type& value, const FormatSpec& spec) : super_type(value), m_spec(spec) {}
+        FormattedValue(FormattedValue&& other) :
+            m_formatter(std::move(other.m_formatter)), m_conv(other.m_conv), m_spec(other.m_spec) {}
 
         inline void format(std::ostream& out) const {
-            format_value(out, this->value, m_spec);
+            m_formatter->format(out, m_conv, m_spec);
         }
 
         inline operator std::string () const {
@@ -28,143 +28,143 @@ namespace formatstring {
             return out.str();
         }
 
-        inline self_type& align(FormatSpec::Alignment alignment) {
+        inline FormattedValue& align(FormatSpec::Alignment alignment) {
             m_spec.alignment = alignment;
             return *this;
         }
 
-        inline self_type& left() {
+        inline FormattedValue& left() {
             m_spec.alignment = FormatSpec::Left;
             return *this;
         }
 
-        inline self_type& right() {
+        inline FormattedValue& right() {
             m_spec.alignment = FormatSpec::Right;
             return *this;
         }
 
-        inline self_type& afterSign() {
+        inline FormattedValue& afterSign() {
             m_spec.alignment = FormatSpec::AfterSign;
             return *this;
         }
 
-        inline self_type& center() {
+        inline FormattedValue& center() {
             m_spec.alignment = FormatSpec::Center;
             return *this;
         }
 
-        inline self_type& type(FormatSpec::Type type) {
+        inline FormattedValue& type(FormatSpec::Type type) {
             m_spec.type = type;
             return *this;
         }
 
-        inline self_type& bin() {
+        inline FormattedValue& bin() {
             m_spec.type = FormatSpec::Bin;
             return *this;
         }
 
-        inline self_type& character() {
+        inline FormattedValue& character() {
             m_spec.type = FormatSpec::Character;
             return *this;
         }
 
-        inline self_type& dec() {
+        inline FormattedValue& dec() {
             m_spec.type = FormatSpec::Dec;
             return *this;
         }
 
-        inline self_type& oct() {
+        inline FormattedValue& oct() {
             m_spec.type = FormatSpec::Oct;
             return *this;
         }
 
-        inline self_type& hex() {
+        inline FormattedValue& hex() {
             m_spec.type = FormatSpec::Hex;
             return *this;
         }
 
-        inline self_type& exp() {
+        inline FormattedValue& exp() {
             m_spec.type = FormatSpec::Exp;
             return *this;
         }
 
-        inline self_type& fixed() {
+        inline FormattedValue& fixed() {
             m_spec.type = FormatSpec::Fixed;
             return *this;
         }
 
-        inline self_type& general() {
+        inline FormattedValue& general() {
             m_spec.type = FormatSpec::General;
             return *this;
         }
 
-        inline self_type& precentage() {
+        inline FormattedValue& precentage() {
             m_spec.type = FormatSpec::Percentage;
             return *this;
         }
 
-        inline self_type& hexFloat() {
+        inline FormattedValue& hexFloat() {
             m_spec.type = FormatSpec::HexFloat;
             return *this;
         }
 
-        inline self_type& str() {
+        inline FormattedValue& str() {
             m_spec.type = FormatSpec::String;
             return *this;
         }
 
-        inline self_type& sign(FormatSpec::Sign sign) {
+        inline FormattedValue& sign(FormatSpec::Sign sign) {
             m_spec.sign = sign;
             return *this;
         }
 
-        inline self_type& fill(char fill, std::size_t width) {
+        inline FormattedValue& fill(char fill, std::size_t width) {
             m_spec.fill = fill;
             m_spec.width = width;
             return *this;
         }
 
-        inline self_type& fill(char fill) {
+        inline FormattedValue& fill(char fill) {
             m_spec.fill = fill;
             return *this;
         }
 
-        inline self_type& width(std::size_t width) {
+        inline FormattedValue& width(std::size_t width) {
             m_spec.width = width;
             return *this;
         }
 
-        inline self_type& alt(bool alternate = true) {
+        inline FormattedValue& alt(bool alternate = true) {
             m_spec.alternate = alternate;
             return *this;
         }
 
-        inline self_type& upper() {
+        inline FormattedValue& upper() {
             m_spec.upperCase = true;
             return *this;
         }
 
-        inline self_type& lower() {
+        inline FormattedValue& lower() {
             m_spec.upperCase = false;
             return *this;
         }
 
-        inline self_type& thoudsandsSeperator(bool thoudsandsSeperator = true) {
+        inline FormattedValue& thoudsandsSeperator(bool thoudsandsSeperator = true) {
             m_spec.thoudsandsSeperator = thoudsandsSeperator;
             return *this;
         }
 
-        inline self_type& spec(const FormatSpec& spec) {
+        inline FormattedValue& spec(const FormatSpec& spec) {
             m_spec = spec;
             return *this;
         }
 
-        inline self_type& spec(const std::string& spec) {
+        inline FormattedValue& spec(const std::string& spec) {
             m_spec = FormatSpec(spec);
             return *this;
         }
 
-        inline self_type& spec(const char* spec) {
+        inline FormattedValue& spec(const char* spec) {
             m_spec = FormatSpec(spec);
             return *this;
         }
@@ -173,87 +173,132 @@ namespace formatstring {
             return m_spec;
         }
 
+        inline FormattedValue& conversion(Conversion conv) {
+            m_conv = conv;
+            return *this;
+        }
+
+        inline FormattedValue& repr() {
+            m_conv = ReprConv;
+            return *this;
+        }
+
+        inline Conversion conversion() const {
+            return m_conv;
+        }
+
         inline std::string string() const {
             return (std::string)*this;
         }
 
     private:
+        std::unique_ptr<Formatter> m_formatter;
+        Conversion m_conv;
         FormatSpec m_spec;
     };
 
     template<typename T>
-    inline FormattedValue<T> val(const T& value) {
-        return FormattedValue<T>(value, FormatSpec());
+    inline FormattedValue val(const T& value) {
+        return value;
     }
 
-    inline FormattedValue<const char*> val(const char str[]) {
-        return FormattedValue<const char*>(str, FormatSpec());
-    }
-
-    template<typename T>
-    inline auto val(const T& value, const char* spec) {
-        return val(value).spec(spec);
+    inline FormattedValue val(const char str[]) {
+        return str;
     }
 
     template<typename T>
-    inline auto val(const T& value, const std::string& spec) {
-        return val(value).spec(spec);
+    inline FormattedValue val(const T& value, const char* spec) {
+        FormattedValue fmt = value;
+        fmt.spec(spec);
+        return fmt;
     }
 
     template<typename T>
-    inline auto val(const T& value, const FormatSpec& spec) {
-        return val(value).spec(spec);
+    inline FormattedValue val(const T& value, const std::string& spec) {
+        FormattedValue fmt = value;
+        fmt.spec(spec);
+        return fmt;
     }
 
     template<typename T>
-    inline auto val(const T& value, FormatSpec::Alignment alignment) {
-        return val(value).align(alignment);
+    inline FormattedValue val(const T& value, const FormatSpec& spec) {
+        FormattedValue fmt = value;
+        fmt.spec(spec);
+        return fmt;
     }
 
     template<typename T>
-    inline auto val(const T& value, FormatSpec::Type type) {
-        return val(value).type(type);
+    inline FormattedValue val(const T& value, FormatSpec::Alignment alignment) {
+        FormattedValue fmt = value;
+        fmt.align(alignment);
+        return fmt;
     }
 
     template<typename T>
-    inline auto val(const T& value, FormatSpec::Sign sign) {
-        return val(value).sign(sign);
+    inline FormattedValue val(const T& value, FormatSpec::Type type) {
+        FormattedValue fmt = value;
+        fmt.type(type);
+        return fmt;
     }
 
     template<typename T>
-    inline auto val(const T& value, char fill, std::size_t width) {
-        return val(value).fill(fill, width);
+    inline FormattedValue val(const T& value, FormatSpec::Sign sign) {
+        FormattedValue fmt = value;
+        fmt.sign(sign);
+        return fmt;
+    }
+
+    template<typename T>
+    inline FormattedValue val(const T& value, char fill, std::size_t width) {
+        FormattedValue fmt = value;
+        fmt.fill(fill, width);
+        return fmt;
     }
 
     template<typename NumberType>
-    inline auto bin(NumberType value) {
-        return val(value).bin();
+    inline FormattedValue bin(NumberType value) {
+        FormattedValue fmt = value;
+        fmt.bin();
+        return fmt;
     }
 
     template<typename NumberType>
-    inline auto dec(NumberType value) {
-        return val(value).dec();
+    inline FormattedValue dec(NumberType value) {
+        FormattedValue fmt = value;
+        fmt.dec();
+        return fmt;
     }
 
     template<typename NumberType>
-    inline auto oct(NumberType value) {
-        return val(value).oct();
+    inline FormattedValue oct(NumberType value) {
+        FormattedValue fmt = value;
+        fmt.oct();
+        return fmt;
     }
 
     template<typename NumberType>
-    inline auto hex(NumberType value) {
-        return val(value).hex();
+    inline FormattedValue hex(NumberType value) {
+        FormattedValue fmt = value;
+        fmt.hex();
+        return fmt;
     }
 
-    /* TODO
     template<typename T>
-    inline auto repr(const T& value) {
-        return val(value).repr();
+    inline FormattedValue str(T value) {
+        FormattedValue fmt = value;
+        fmt.str();
+        return fmt;
     }
-    */
 
-    template<typename OStream, typename Value>
-    OStream& operator << (OStream& out, const FormattedValue<Value>& value) {
+    template<typename T>
+    inline FormattedValue repr(const T& value) {
+        FormattedValue fmt = value;
+        fmt.repr();
+        return fmt;
+    }
+
+    template<typename OStream>
+    OStream& operator << (OStream& out, const FormattedValue& value) {
         value.format(out);
         return out;
     }

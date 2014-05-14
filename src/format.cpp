@@ -240,8 +240,9 @@ Format::Format(const std::string& fmt) : m_fmt() {
     //
     // And added "a" and "A" format specifier from C99 format strings.
     //
-    // replacement_field ::=  "{" [arg_index] [":" format_spec] "}"
+    // replacement_field ::=  "{" [arg_index] ["!" conversion] [":" format_spec] "}"
     // arg_index         ::=  integer
+    // conversion        ::=  "r" | "s"
     // format_spec       ::=  [[fill]align][sign][#][0][width][,][.precision][type]
     // fill              ::=  <any character>
     // align             ::=  "<" | ">" | "=" | "^"
@@ -256,14 +257,14 @@ Format::Format(const std::string& fmt) : m_fmt() {
     std::string::const_iterator end = fmt.end();
 
     while (it != end) {
-        char cp = *it;
+        char ch = *it;
 
-        switch (cp) {
+        switch (ch) {
         case '{':
             ++ it;
-            cp = *it;
-            if (cp == '{') {
-                buffer.sputc(cp);
+            ch = *it;
+            if (ch == '{') {
+                buffer.sputc(ch);
             }
             else {
                 if (buffer.in_avail() > 0) {
@@ -273,39 +274,55 @@ Format::Format(const std::string& fmt) : m_fmt() {
 
                 // parse format
                 std::size_t index = currentIndex;
-                FormatSpec options;
+                FormatSpec spec;
+                Conversion conv = NoConv;
 
-                if (cp == ':') {
+                if (ch == '!') {
                     ++ it;
-                    it = parse_spec(fmt, it, &options);
-                    cp = *it;
+                    if (ch == 'r') {
+                        conv = ReprConv;
+                        ++ it;
+                    }
+                    else if (ch == 's') {
+                        conv = StrConv;
+                        ++ it;
+                    }
+                    else {
+                        throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected 'r' or 's'");
+                    }
+                }
+
+                if (ch == ':') {
+                    ++ it;
+                    it = parse_spec(fmt, it, &spec);
+                    ch = *it;
                     ++ currentIndex;
                 }
-                else if (cp != '}') {
+                else if (ch != '}') {
                     it = parse_size(it, end, &index);
-                    cp = *it;
-                    if (cp == ':') {
+                    ch = *it;
+                    if (ch == ':') {
                         ++ it;
-                        it = parse_spec(fmt, it, &options);
-                        cp = *it;
+                        it = parse_spec(fmt, it, &spec);
+                        ch = *it;
                     }
                 }
                 else {
                     ++ currentIndex;
                 }
 
-                if (cp != '}') {
+                if (ch != '}') {
                     throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected '}'");
                 }
 
-                m_fmt.emplace_back(new ValueFormatItem(index, options));
+                m_fmt.emplace_back(new ValueFormatItem(index, conv, spec));
             }
             break;
 
         case '}':
             ++ it;
             if (*it == '}') {
-                buffer.sputc(cp);
+                buffer.sputc(ch);
             }
             else {
                 throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected '}'");
@@ -313,7 +330,7 @@ Format::Format(const std::string& fmt) : m_fmt() {
             break;
 
         default:
-            buffer.sputc(cp);
+            buffer.sputc(ch);
             break;
         }
         ++ it;

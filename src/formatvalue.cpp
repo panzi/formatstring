@@ -316,6 +316,29 @@ void formatstring::format_value(std::ostream& out, const char* str, const Format
     format_string(out, str, spec);
 }
 
+void formatstring::repr_value(std::ostream& out, char value) {
+    const char *str = 0;
+    switch (value) {
+    case '\0': str = "'\\0'"; break;
+    case '\a': str = "'\\a'"; break;
+    case '\b': str = "'\\b'"; break;
+    case '\t': str = "'\\t'"; break;
+    case '\n': str = "'\\n'"; break;
+    case '\v': str = "'\\v'"; break;
+    case '\f': str = "'\\f'"; break;
+    case '\r': str = "'\\r'"; break;
+    case '\'': str = "'\\''"; break;
+    case '\\': str = "'\\\\'"; break;
+    default:
+        out.put('\'');
+        out.put(value);
+        out.put('\'');
+        return;
+    }
+
+    out.write(str, std::strlen(str));
+}
+
 void formatstring::repr_value(std::ostream& out, const std::string& value) {
     repr_value(out, value.c_str());
 }

@@ -9,6 +9,7 @@ add_library(libformatstring
 	valueformatitem.h
 
 	../include/formatstring.h
+	../include/formatstring/conversion.h
 	../include/formatstring/format.h
 	../include/formatstring/formatitem.h
 	../include/formatstring/formatspec.h

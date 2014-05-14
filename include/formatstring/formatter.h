@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "formatstring/formatvalue.h"
+#include "formatstring/conversion.h"
 
 namespace formatstring {
 
@@ -20,7 +21,7 @@ namespace formatstring {
     class Formatter {
     public:
         virtual ~Formatter() {}
-        virtual void format(std::ostream& out, const FormatSpec& spec) const = 0;
+        virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const = 0;
         virtual Formatter* clone() const = 0;
 
         template<typename First, typename... Rest>
@@ -42,8 +43,27 @@ namespace formatstring {
 
         ValueFormatter(const value_type& value) : value(value) {}
 
-        virtual void format(std::ostream& out, const FormatSpec& spec) const {
-            format_value(out, value, spec);
+        virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
+            switch (conv) {
+            case ReprConv:
+            {
+                std::stringstream buffer;
+                repr_value(buffer, value);
+                format_value(out, buffer.str(), spec);
+                break;
+            }
+
+            case StrConv:
+            {
+                std::stringstream buffer;
+                format_value(buffer, value, FormatSpec());
+                format_value(out, buffer.str(), spec);
+                break;
+            }
+            default:
+                format_value(out, value, spec);
+                break;
+            }
         }
 
         virtual ValueFormatter<T>* clone() const {
@@ -62,8 +82,20 @@ namespace formatstring {
         SliceFormatter(Iter begin, Iter end) :
             begin(begin), end(end) {}
 
-        virtual void format(std::ostream& out, const FormatSpec& spec) const {
-            format_slice(out, begin, end, spec);
+        virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
+            switch (conv) {
+            case ReprConv:
+            case StrConv:
+            {
+                std::stringstream buffer;
+                format_slice(buffer, begin, end, FormatSpec());
+                format_value(out, buffer.str(), spec);
+                break;
+            }
+            default:
+                format_slice(out, begin, end, spec);
+                break;
+            }
         }
 
         virtual SliceFormatter<Iter>* clone() const {
