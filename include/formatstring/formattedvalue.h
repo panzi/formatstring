@@ -12,8 +12,11 @@ namespace formatstring {
     class FormattedValue {
     public:
         template<typename T>
-        FormattedValue(const T& value, Conversion conv = NoConv, const FormatSpec& spec = FormatSpec()) :
+        FormattedValue(const T& value, Conversion conv, const FormatSpec& spec) :
             m_formatter(make_formatter(value)), m_conv(conv), m_spec(spec) {}
+
+        FormattedValue(Formatter* formatter, Conversion conv = NoConv, const FormatSpec& spec = FormatSpec()) :
+            m_formatter(formatter), m_conv(conv), m_spec(spec) {}
 
         FormattedValue(FormattedValue&& other) :
             m_formatter(std::move(other.m_formatter)), m_conv(other.m_conv), m_spec(other.m_spec) {}
@@ -194,100 +197,105 @@ namespace formatstring {
 
     template<typename T>
     inline FormattedValue val(const T& value) {
-        return value;
+        return FormattedValue(value,NoConv,FormatSpec());
+    }
+
+    template<typename Iter>
+    inline FormattedValue slice(Iter begin, Iter end) {
+        return new SliceFormatter<Iter>(begin, end);
     }
 
     inline FormattedValue val(const char str[]) {
-        return str;
+        return FormattedValue(str,NoConv,FormatSpec());
     }
 
     template<typename T>
     inline FormattedValue val(const T& value, const char* spec) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.spec(spec);
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue val(const T& value, const std::string& spec) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.spec(spec);
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue val(const T& value, const FormatSpec& spec) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.spec(spec);
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue val(const T& value, FormatSpec::Alignment alignment) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.align(alignment);
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue val(const T& value, FormatSpec::Type type) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.type(type);
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue val(const T& value, FormatSpec::Sign sign) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.sign(sign);
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue val(const T& value, char fill, std::size_t width) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.fill(fill, width);
         return fmt;
     }
 
     template<typename NumberType>
     inline FormattedValue bin(NumberType value) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.bin();
         return fmt;
     }
 
     template<typename NumberType>
     inline FormattedValue dec(NumberType value) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.dec();
         return fmt;
     }
 
     template<typename NumberType>
     inline FormattedValue oct(NumberType value) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.oct();
         return fmt;
     }
 
     template<typename NumberType>
     inline FormattedValue hex(NumberType value) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.hex();
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue str(T value) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.str();
         return fmt;
     }
 
     template<typename T>
     inline FormattedValue repr(const T& value) {
-        FormattedValue fmt = value;
+        FormattedValue fmt = val(value);
         fmt.repr();
         return fmt;
     }

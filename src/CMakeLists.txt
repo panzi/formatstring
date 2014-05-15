@@ -1,4 +1,4 @@
-add_library(libformatstring
+add_library(formatstring
 	format.cpp
 	strformatitem.cpp
 	valueformatitem.cpp

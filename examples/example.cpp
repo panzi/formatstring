@@ -15,25 +15,8 @@ struct Custom {
     std::string member;
 };
 
-class CustomFormatter : public formatstring::Formatter {
-public:
-    CustomFormatter(const Custom& ref) : ref(ref) {}
-
-    virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
-        (void)conv;
-        (void)spec;
-        out << "<Custom " << ref.member << ">";
-    }
-
-    virtual CustomFormatter* clone() const {
-        return new CustomFormatter(ref);
-    }
-
-    const Custom& ref;
-};
-
-CustomFormatter* make_formatter(const Custom& ref) {
-    return new CustomFormatter(ref);
+std::ostream& operator << (std::ostream& out, const Custom& ref) {
+    return out << "<Custom " << ref.member << ">";
 }
 
 int main() {
@@ -53,11 +36,14 @@ int main() {
 
     std::string ch = repr('\n');
     Custom var("foo bar");
-    std::cout << format("{} ", var) << repr(var) << '\n';
+    std::cout << format("{:_<20} ", var) << repr(var) << '\n';
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';
 
     std::cout << format("{:.3} {:.1%} {:.2f} ({: e}) {:e} pi={:+g} {!r:_^20} {:020} {:.2f}\n",
                         12.12, 1.234, 1.0, 5.2, 1000000, M_PI, -1.2, -0.0, -NAN);
+
+    const char* str = "foo bar baz";
+    std::cout << slice(str, str+7) << '\n';
 
     return 0;
 }

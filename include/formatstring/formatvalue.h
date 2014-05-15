@@ -9,10 +9,7 @@
 
 namespace formatstring {
 
-    class FormatSpec;
-
-    template<typename T>
-    void repr_value(std::ostream& out, const T& value);
+    class FormattedValue;
 
     inline void repr_value(std::ostream& out, bool value) { out << (value ? "true" : "false"); }
 
@@ -116,16 +113,6 @@ namespace formatstring {
         buffer.put(right);
 
         format_value(out, buffer.str(), spec);
-    }
-
-    template<typename T>
-    inline void format_value(std::ostream& out, const T& value, const FormatSpec& spec) {
-        format_value(out, (std::stringstream() << value).str(), spec);
-    }
-
-    template<typename T>
-    inline void repr_value(std::ostream& out, const T& value) {
-        out << value;
     }
 
     template<typename... Args>
