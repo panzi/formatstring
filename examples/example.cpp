@@ -49,7 +49,7 @@ int main() {
     std::cout << fmt('A', 52) << ' ' << fmt(53, 'B') << '\n';
     std::cout << format("bla {} {:_^20} {} {} {}\n", vec, arr,
                         std::tuple<std::string,int,bool>("foo\n\t\"\\", 12, false),
-                        std::tuple<int>(0), std::tuple<>());
+                        std::tuple<float>(0), std::tuple<>());
 
     std::string ch = repr('\n');
     Custom var("foo bar");

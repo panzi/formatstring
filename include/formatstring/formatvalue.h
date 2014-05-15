@@ -74,12 +74,27 @@ namespace formatstring {
         }
     };
 
+    template<std::size_t N, typename... Args>
+    struct format_tuple {
+        static inline void format(std::ostream& out, const std::tuple<Args...>& value) {
+            format_tail<std::tuple_size< std::tuple<Args...> >::value, Args...>::format(out, value);
+        }
+    };
+
+    template<typename... Args>
+    struct format_tuple<1, Args...> {
+        static inline void format(std::ostream& out, const std::tuple<Args...>& value) {
+            repr_value(out, std::get<0>(value));
+            out.put(',');
+        }
+    };
+
     template<typename... Args>
     void format_value(std::ostream& out, const std::tuple<Args...>& value, const FormatSpec& spec, char left = '(', char right = ')') {
         std::stringstream buffer;
 
         buffer.put(left);
-        format_tail<std::tuple_size< std::tuple<Args...> >::value, Args...>::format(buffer, value);
+        format_tuple<std::tuple_size< std::tuple<Args...> >::value, Args...>::format(buffer, value);
         buffer.put(right);
 
         format_value(out, buffer.str(), spec);
