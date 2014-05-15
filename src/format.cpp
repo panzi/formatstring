@@ -198,13 +198,6 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
         spec->type = FormatSpec::Percentage;
         ++ it;
         break;
-
-    case 'a':
-    case 'A':
-        spec->type = FormatSpec::HexFloat;
-        spec->upperCase = type == 'A';
-        ++ it;
-        break;
     }
 
     if (spec->thoudsandsSeperator &&
@@ -224,7 +217,7 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
         throw std::invalid_argument("Alternate form (#) not allowed in string format specifier");
     }
 
-    if (precision && ((!spec->isDecimalType() && spec->type != FormatSpec::Generic) || spec->type == FormatSpec::HexFloat)) {
+    if (precision && (!spec->isDecimalType() && spec->type != FormatSpec::Generic)) {
         std::string msg = "Cannot specify '.' with '";
         msg += (char)type;
         msg += "'.";
@@ -277,38 +270,34 @@ Format::Format(const std::string& fmt) : m_fmt() {
                 FormatSpec spec;
                 Conversion conv = NoConv;
 
+                if (ch >= '0' && ch <= '9') {
+                    it = parse_size(it, end, &index);
+                    ch = *it;
+                }
+                else {
+                    ++ currentIndex;
+                }
+
                 if (ch == '!') {
                     ++ it;
+                    ch = *it;
                     if (ch == 'r') {
                         conv = ReprConv;
-                        ++ it;
                     }
                     else if (ch == 's') {
                         conv = StrConv;
-                        ++ it;
                     }
                     else {
                         throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected 'r' or 's'");
                     }
+                    ++ it;
+                    ch = *it;
                 }
 
                 if (ch == ':') {
                     ++ it;
                     it = parse_spec(fmt, it, &spec);
                     ch = *it;
-                    ++ currentIndex;
-                }
-                else if (ch != '}') {
-                    it = parse_size(it, end, &index);
-                    ch = *it;
-                    if (ch == ':') {
-                        ++ it;
-                        it = parse_spec(fmt, it, &spec);
-                        ch = *it;
-                    }
-                }
-                else {
-                    ++ currentIndex;
                 }
 
                 if (ch != '}') {

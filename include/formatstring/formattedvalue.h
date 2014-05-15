@@ -103,11 +103,6 @@ namespace formatstring {
             return *this;
         }
 
-        inline FormattedValue& hexFloat() {
-            m_spec.type = FormatSpec::HexFloat;
-            return *this;
-        }
-
         inline FormattedValue& str() {
             m_spec.type = FormatSpec::String;
             return *this;
@@ -119,7 +114,7 @@ namespace formatstring {
         }
 
         inline FormattedValue& fill(char fill, std::size_t width) {
-            m_spec.fill = fill;
+            m_spec.fill  = fill;
             m_spec.width = width;
             return *this;
         }

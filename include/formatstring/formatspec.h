@@ -32,7 +32,6 @@ namespace formatstring {
             Fixed,
             General,
             Percentage,
-            HexFloat,
 
             String
 
@@ -78,7 +77,6 @@ namespace formatstring {
             case Fixed:
             case General:
             case Percentage:
-            case HexFloat:
                 return true;
 
             default:
@@ -106,7 +104,6 @@ namespace formatstring {
             case Fixed:
             case General:
             case Percentage:
-            case HexFloat:
                 return true;
 
             default:
