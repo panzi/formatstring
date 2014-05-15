@@ -29,6 +29,15 @@ namespace formatstring {
     void repr_value(std::ostream& out, const std::string& value);
     void repr_value(std::ostream& out, const char* value);
 
+    template<typename... Args>
+    void repr_value(std::ostream& out, const std::tuple<Args...>& value);
+
+    template<typename First, typename Second>
+    void repr_value(std::ostream& out, const std::pair<First,Second>& value);
+
+    template<typename Iter>
+    void repr_slice(std::ostream& out, Iter begin, Iter end);
+
     void format_value(std::ostream& out, bool value, const FormatSpec& spec);
 
     void format_value(std::ostream& out, char value, const FormatSpec& spec);
@@ -46,6 +55,9 @@ namespace formatstring {
 
     void format_value(std::ostream& out, const std::string& str, const FormatSpec& spec);
     void format_value(std::ostream& out, const char* str, const FormatSpec& spec);
+
+    template<typename Iter>
+    void format_slice(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec);
 
     template<std::size_t N, typename... Args>
     struct format_tail {
@@ -87,38 +99,62 @@ namespace formatstring {
     };
 
     template<typename... Args>
-    void format_value(std::ostream& out, const std::tuple<Args...>& value, const FormatSpec& spec, char left = '(', char right = ')') {
+    void format_value(std::ostream& out, const std::tuple<Args...>& value, const FormatSpec& spec) {
         std::stringstream buffer;
 
-        buffer.put(left);
-        format_tuple<std::tuple_size< std::tuple<Args...> >::value, Args...>::format(buffer, value);
-        buffer.put(right);
+        repr_value(buffer, value);
+
+        format_value(out, buffer.str(), spec);
+    }
+
+    template<typename First, typename Second>
+    void format_value(std::ostream& out, const std::pair<First,Second>& value, const FormatSpec& spec) {
+        std::stringstream buffer;
+
+        repr_value(buffer, value);
 
         format_value(out, buffer.str(), spec);
     }
 
     template<typename Iter>
-    void format_slice(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec, char left = '[', char right = ']') {
+    void format_slice(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec) {
         std::stringstream buffer;
 
-        buffer.put(left);
-        if (begin != end) {
-            repr_value(buffer, *begin);
-
-            for (++ begin; begin != end; ++ begin) {
-                buffer.write(", ", 2);
-                repr_value(buffer, *begin);
-            }
-        }
-        buffer.put(right);
+        repr_slice(buffer, begin, end);
 
         format_value(out, buffer.str(), spec);
     }
 
     template<typename... Args>
     void repr_value(std::ostream& out, const std::tuple<Args...>& value) {
-        format_value(out, value, FormatSpec());
+        out.put('(');
+        format_tuple<std::tuple_size< std::tuple<Args...> >::value, Args...>::format(out, value);
+        out.put(')');
     }
+
+    template<typename First, typename Second>
+    void repr_value(std::ostream& out, const std::pair<First,Second>& value) {
+        out.put('(');
+        repr_value(out, value.first);
+        out.write(", ", 2);
+        repr_value(out, value.second);
+        out.put(')');
+    }
+
+    template<typename Iter>
+    void repr_slice(std::ostream& out, Iter begin, Iter end) {
+        out.put('[');
+        if (begin != end) {
+            repr_value(out, *begin);
+
+            for (++ begin; begin != end; ++ begin) {
+                out.write(", ", 2);
+                repr_value(out, *begin);
+            }
+        }
+        out.put(']');
+    }
+
 }
 
 #endif // FORMATSTRING_FORMATVALUE_H

@@ -1,22 +1,61 @@
-#include "formatstring.h"
-
 #include <iostream>
 #include <vector>
 #include <array>
 #include <tuple>
 #include <cmath>
 
+#include "formatstring.h"
+
 using namespace formatstring;
 
-struct Custom {
-    Custom(const std::string& value) : member(value) {}
-    Custom(const char* value) : member(value) {}
+struct Example1 {
+    Example1(const std::string& value) : member(value) {}
+    Example1(const char* value) : member(value) {}
 
     std::string member;
 };
 
-std::ostream& operator << (std::ostream& out, const Custom& ref) {
-    return out << "<Custom " << ref.member << ">";
+struct Example2 {
+    Example2(const std::string& value) : member(value) {}
+    Example2(const char* value) : member(value) {}
+
+    std::string member;
+};
+
+std::ostream& operator << (std::ostream& out, const Example1& value) {
+    return out << "<Example1 " << value.member << ">";
+}
+
+class Example2Formatter : public Formatter {
+public:
+    Example2Formatter(const Example2* value) : value(value) {}
+
+    virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
+        std::stringstream buffer;
+
+        switch (conv) {
+        case ReprConv:
+            buffer << "Example2(" << repr(value->member) << ")";
+            break;
+
+        default:
+            buffer << "<Example2 " << value->member << ">";
+            break;
+        }
+
+        format_value(out, buffer.str(), spec);
+    }
+
+    virtual Example2Formatter* clone() const {
+        return new Example2Formatter(value);
+    }
+
+private:
+    const Example2* value;
+};
+
+Example2Formatter* make_formatter(const Example2& value) {
+    return new Example2Formatter(&value);
 }
 
 int main() {
@@ -24,26 +63,31 @@ int main() {
     std::array<int,3> arr = {1, 2, 3};
 
     std::string s = hex(123);
-    std::cout << format(" {{foo}} {:_^20s} bar {0} baz {:#020B} {} {}\n", "hello", 1234, false, 2345)
+    std::cout << format(" {{foo}} {:_^20s} bar {0} baz {:#020B} {} {} {!s}\n", "hello", 1234, false, 2345, "bla bla")
               << val(true).upper().width(20).right() << ' ' << s << ' ' << oct(234).alt() << '\n';
 
     Format fmt = compile("{}-{:c}");
 
     std::cout << fmt('A', 52) << ' ' << fmt(53, 'B') << '\n';
-    std::cout << format("bla {} {:_^20} {} {} {}\n", vec, arr,
+    std::cout << format("bla {} {:_^20} {} {} {} {}\n", vec, arr,
                         std::tuple<std::string,int,bool>("foo\n\t\"\\", 12, false),
-                        std::tuple<float>(0), std::tuple<>());
+                        std::tuple<float>(0), std::tuple<>(), std::pair<int,std::string>(32,"bla"));
 
     std::string ch = repr('\n');
-    Custom var("foo bar");
-    std::cout << format("{:_<20} ", var) << repr(var) << '\n';
+    Example1 ex1("foo bar");
+    Example2 *ptr = new Example2("ptr");
+    std::shared_ptr<Example2> ptr2(new Example2("shared"));
+    std::cout << format("{:_<20} ", ex1) << repr(Example1("bla")) << '\n';
+    std::cout << format("{}, {!r}, {!s}, {}\n", Example2("blub"), Example2("bla\nbla"), ptr, *ptr2) << '\n';
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';
 
     std::cout << format("{:.3} {:.1%} {:.2f} ({: e}) {:e} pi={:+g} {!r:_^20} {:020} {:.2f}\n",
                         12.12, 1.234, 1.0, 5.2, 1000000, M_PI, -1.2, -0.0, -NAN);
 
     const char* str = "foo bar baz";
-    std::cout << slice(str, str+7) << '\n';
+    std::cout << slice(str, str+7) << ' ' << slice(str+8, str+11).repr() << '\n';
+
+    delete ptr;
 
     return 0;
 }

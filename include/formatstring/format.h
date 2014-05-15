@@ -51,6 +51,11 @@ namespace formatstring {
             Formatter::extend(m_formatters, args...);
         }
 
+        template<typename... Args>
+        BoundFormat(Format&& format, const Args&... args) : m_format(std::move(format)) {
+            Formatter::extend(m_formatters, args...);
+        }
+
         inline void write_into(std::ostream& out) const {
             m_format.apply(out, m_formatters);
         }
@@ -82,7 +87,7 @@ namespace formatstring {
 
     template<typename... Args>
     inline BoundFormat format(const std::string& fmt, const Args&... args) {
-        return BoundFormat(fmt, args...);
+        return BoundFormat(std::move(fmt), args...);
     }
 
     template<typename OStream>

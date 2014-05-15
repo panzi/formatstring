@@ -73,24 +73,62 @@ namespace formatstring {
     };
 
     template<typename T>
-    class GenericFormatter : public Formatter {
+    class PtrFormatter : public Formatter {
     public:
         typedef T value_type;
 
-        GenericFormatter(const value_type& value) : value(value) {}
+        PtrFormatter(const value_type* value) : value(value) {}
+
+        virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
+            switch (conv) {
+            case ReprConv:
+            {
+                std::stringstream buffer;
+                repr_value(buffer, *value);
+                format_value(out, buffer.str(), spec);
+                break;
+            }
+            case StrConv:
+            {
+                std::stringstream buffer;
+                format_value(buffer, *value, FormatSpec());
+                format_value(out, buffer.str(), spec);
+                break;
+            }
+            default:
+                format_value(out, *value, spec);
+                break;
+            }
+        }
+
+        virtual PtrFormatter<T>* clone() const {
+            return new PtrFormatter<T>(value);
+        }
+
+    private:
+        const value_type* value;
+    };
+
+    template<typename T>
+    class FallbackFormatter : public Formatter {
+    public:
+        typedef T value_type;
+
+        FallbackFormatter(const value_type* value) : value(value) {}
 
         virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
             (void)conv;
             std::stringstream buffer;
-            buffer << value;
+            buffer << *value;
             format_value(out, buffer.str(), spec);
         }
 
-        virtual GenericFormatter<T>* clone() const {
-            return new GenericFormatter<T>(value);
+        virtual FallbackFormatter<T>* clone() const {
+            return new FallbackFormatter<T>(value);
         }
 
-        const value_type value;
+    private:
+        const value_type* value;
     };
 
     template<typename Iter>
@@ -150,8 +188,8 @@ namespace formatstring {
     }
 
     template<typename T>
-    inline GenericFormatter<T>* make_formatter(const T& value) {
-        return new GenericFormatter<T>(value);
+    inline FallbackFormatter<T>* make_formatter(const T& value) {
+        return new FallbackFormatter<T>(&value);
     }
 
     template<typename T>
@@ -165,8 +203,13 @@ namespace formatstring {
     }
 
     template<typename... Args>
-    inline ValueFormatter< std::tuple<Args...> >* make_formatter(const std::tuple<Args...>& value) {
-        return new ValueFormatter< std::tuple<Args...> >(value);
+    inline PtrFormatter< std::tuple<Args...> >* make_formatter(const std::tuple<Args...>& value) {
+        return new PtrFormatter< std::tuple<Args...> >(&value);
+    }
+
+    template<typename First, typename Second>
+    inline PtrFormatter< std::pair<First,Second> >* make_formatter(const std::pair<First,Second>& value) {
+        return new PtrFormatter< std::pair<First,Second> >(&value);
     }
 
     template<typename First, typename... Rest>
