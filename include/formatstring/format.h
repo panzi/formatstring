@@ -15,7 +15,6 @@ namespace formatstring {
 
     class Format {
     public:
-        Format() : m_fmt() {}
         Format(const std::string& fmt);
         Format(const Format& other);
         Format(Format&& rhs) : m_fmt(std::move(rhs.m_fmt)) {}
@@ -36,33 +35,31 @@ namespace formatstring {
         void apply(std::ostream& out, const Formatters& formatters) const;
 
     private:
-        FormatItems m_fmt;
+        std::shared_ptr<FormatItems> m_fmt;
     };
 
     class BoundFormat {
     public:
-        BoundFormat(const Format& fmt, const Formatters& formatters);
-        BoundFormat(const std::string& fmt, const Formatters& formatters);
         BoundFormat(BoundFormat&& rhs) : m_format(std::move(rhs.m_format)), m_formatters(std::move(rhs.m_formatters)) {}
         BoundFormat(const BoundFormat& other);
 
         template<typename... Args>
-        BoundFormat(const Format& format, const Args&... args) : m_format(format) {
-            Formatter::extend(m_formatters, args...);
+        BoundFormat(const Format& format, const Args&... args) : m_format(format), m_formatters(std::make_shared<Formatters>()) {
+            Formatter::extend(*m_formatters, args...);
         }
 
         template<typename... Args>
-        BoundFormat(Format&& format, const Args&... args) : m_format(std::move(format)) {
-            Formatter::extend(m_formatters, args...);
+        BoundFormat(Format&& format, const Args&... args) : m_format(std::move(format)), m_formatters(std::make_shared<Formatters>()) {
+            Formatter::extend(*m_formatters, args...);
         }
 
         inline void write_into(std::ostream& out) const {
-            m_format.apply(out, m_formatters);
+            m_format.apply(out, *m_formatters);
         }
 
         inline operator std::string () const {
             std::stringstream out;
-            m_format.apply(out, m_formatters);
+            m_format.apply(out, *m_formatters);
             return out.str();
         }
 
@@ -72,7 +69,7 @@ namespace formatstring {
 
     private:
         Format m_format;
-        Formatters m_formatters;
+        std::shared_ptr<Formatters> m_formatters;
     };
 
     template<typename... Args>
@@ -97,7 +94,7 @@ namespace formatstring {
     }
 
     inline Format compile(const std::string& fmt) {
-        return Format(fmt);
+        return fmt;
     }
 }
 

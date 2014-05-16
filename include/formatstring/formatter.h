@@ -22,7 +22,6 @@ namespace formatstring {
     public:
         virtual ~Formatter() {}
         virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const = 0;
-        virtual Formatter* clone() const = 0;
 
         template<typename First, typename... Rest>
         inline static void extend(Formatters& formatters, const First& first, const Rest&... rest);
@@ -65,19 +64,17 @@ namespace formatstring {
             }
         }
 
-        virtual ValueFormatter<T>* clone() const {
-            return new ValueFormatter<T>(value);
-        }
-
+    private:
         const value_type value;
     };
 
-    template<typename T>
+    template<typename T, typename Ptr = const T*>
     class PtrFormatter : public Formatter {
     public:
         typedef T value_type;
+        typedef Ptr ptr_type;
 
-        PtrFormatter(const value_type* value) : value(value) {}
+        PtrFormatter(ptr_type value) : value(value) {}
 
         virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
             switch (conv) {
@@ -101,12 +98,8 @@ namespace formatstring {
             }
         }
 
-        virtual PtrFormatter<T>* clone() const {
-            return new PtrFormatter<T>(value);
-        }
-
     private:
-        const value_type* value;
+        ptr_type value;
     };
 
     template<typename T>
@@ -121,10 +114,6 @@ namespace formatstring {
             std::stringstream buffer;
             buffer << *value;
             format_value(out, buffer.str(), spec);
-        }
-
-        virtual FallbackFormatter<T>* clone() const {
-            return new FallbackFormatter<T>(value);
         }
 
     private:
@@ -154,10 +143,6 @@ namespace formatstring {
                 format_slice(out, begin, end, spec);
                 break;
             }
-        }
-
-        virtual SliceFormatter<Iter>* clone() const {
-            return new SliceFormatter<Iter>(begin, end);
         }
 
         const iterator_type begin;

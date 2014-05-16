@@ -10,7 +10,6 @@ namespace formatstring {
         StrFormatItem(const std::string& str);
 
         virtual void apply(std::ostream& out, const Formatters& formatters) const;
-        virtual StrFormatItem* clone() const;
 
     private:
         std::string m_str;

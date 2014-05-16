@@ -227,7 +227,7 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
     return it;
 }
 
-Format::Format(const std::string& fmt) : m_fmt() {
+Format::Format(const std::string& fmt) : m_fmt(std::make_shared<FormatItems>()) {
     // Format string similar to Python, but a bit more limited:
     // https://docs.python.org/3/library/string.html#format-string-syntax
     //
@@ -261,7 +261,7 @@ Format::Format(const std::string& fmt) : m_fmt() {
             }
             else {
                 if (buffer.in_avail() > 0) {
-                    m_fmt.emplace_back(new StrFormatItem(buffer.str()));
+                    m_fmt->emplace_back(new StrFormatItem(buffer.str()));
                     buffer.str("");
                 }
 
@@ -304,7 +304,7 @@ Format::Format(const std::string& fmt) : m_fmt() {
                     throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected '}'");
                 }
 
-                m_fmt.emplace_back(new ValueFormatItem(index, conv, spec));
+                m_fmt->emplace_back(new ValueFormatItem(index, conv, spec));
             }
             break;
 
@@ -326,18 +326,14 @@ Format::Format(const std::string& fmt) : m_fmt() {
     }
 
     if (buffer.in_avail() > 0) {
-        m_fmt.emplace_back(new StrFormatItem(buffer.str()));
+        m_fmt->emplace_back(new StrFormatItem(buffer.str()));
     }
 }
 
-Format::Format(const Format& other) {
-    for (auto& item : other.m_fmt) {
-        m_fmt.emplace_back(item->clone());
-    }
-}
+Format::Format(const Format& other) : m_fmt(other.m_fmt) {}
 
 void Format::apply(std::ostream& out, const Formatters& formatters) const {
-    for (auto& item : m_fmt) {
+    for (auto& item : *m_fmt) {
         item->apply(out, formatters);
     }
 }
@@ -349,20 +345,4 @@ FormatSpec::FormatSpec(const std::string& spec) : FormatSpec() {
     }
 }
 
-BoundFormat::BoundFormat(const Format& fmt, const Formatters& formatters) : m_format(fmt) {
-    for (auto& formatter : formatters) {
-        m_formatters.emplace_back(formatter->clone());
-    }
-}
-
-BoundFormat::BoundFormat(const std::string& fmt, const Formatters& formatters) : m_format(fmt) {
-    for (auto& formatter : formatters) {
-        m_formatters.emplace_back(formatter->clone());
-    }
-}
-
-BoundFormat::BoundFormat(const BoundFormat& other) : m_format(other.m_format) {
-    for (auto& formatter : other.m_formatters) {
-        m_formatters.emplace_back(formatter->clone());
-    }
-}
+BoundFormat::BoundFormat(const BoundFormat& other) : m_format(other.m_format), m_formatters(other.m_formatters) {}

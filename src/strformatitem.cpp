@@ -8,7 +8,3 @@ void StrFormatItem::apply(std::ostream& out, const Formatters &formatters) const
     (void)formatters;
     out << m_str;
 }
-
-StrFormatItem* StrFormatItem::clone() const {
-    return new StrFormatItem(m_str);
-}

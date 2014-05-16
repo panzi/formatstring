@@ -46,10 +46,6 @@ public:
         format_value(out, buffer.str(), spec);
     }
 
-    virtual Example2Formatter* clone() const {
-        return new Example2Formatter(value);
-    }
-
 private:
     const Example2* value;
 };
@@ -78,10 +74,13 @@ int main() {
     Example2 *ptr = new Example2("ptr");
     std::shared_ptr<Example2> ptr2(new Example2("shared"));
     std::cout << format("{:_<20} ", ex1) << repr(Example1("bla")) << '\n';
-    std::cout << format("{}, {!r}, {!s}, {}\n", Example2("blub"), Example2("bla\nbla"), ptr, *ptr2) << '\n';
+    std::cout << format("{}, {!r}, ptr: {!s}, *ptr: {}, shared_ptr: {}, *shared_ptr: {}\n",
+                        Example2("blub"), Example2("bla\nbla"), ptr, *ptr, ptr2, *ptr2);
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';
 
-    std::cout << format("{:.3} {:.1%} {:.2f} ({: e}) {:e} pi={:+g} {!r:_^20} {:020} {:.2f}\n",
+    std::cout << format("{:020}\n", -0.0);
+
+    std::cout << format("{:.3} {:.1%} {:.2f} ({: e}) {:e} pi={:+g} {!r:_^20} '{:020}' {:.2f}\n",
                         12.12, 1.234, 1.0, 5.2, 1000000, M_PI, -1.2, -0.0, -NAN);
 
     const char* str = "foo bar baz";

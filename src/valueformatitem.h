@@ -14,7 +14,6 @@ namespace formatstring {
         ValueFormatItem(std::size_t index, Conversion conv, const FormatSpec& spec);
 
         virtual void apply(std::ostream& out, const Formatters& formatters) const;
-        virtual ValueFormatItem* clone() const;
 
     private:
         std::size_t m_index;
