@@ -184,7 +184,7 @@ static inline void format_float(std::ostream& out, Float value, const FormatSpec
         throw std::invalid_argument("Cannot use floating point numbers with non-decimal format specifier.");
     }
 
-    bool negative = value < 0;
+    bool negative = std::signbit(value);
     Float abs = negative ? -value : value;
     std::string prefix;
 
@@ -246,7 +246,7 @@ static inline void format_float(std::ostream& out, Float value, const FormatSpec
     case FormatSpec::Percentage:
         buffer.setf(std::ios::fixed, std::ios::floatfield);
         buffer.precision(spec.precision);
-        buffer << (value * 100);
+        buffer << (abs * 100);
         buffer.put('%');
         break;
 
