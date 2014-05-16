@@ -58,8 +58,9 @@ int main() {
     std::vector<std::string> vec = {"foo", "bar", "baz"};
     std::array<int,3> arr = {1, 2, 3};
 
+    std::string bla = "bla";
     std::string s = hex(123);
-    std::cout << format(" {{foo}} {:_^20s} bar {0} baz {:#020B} {} {} {!s}\n", "hello", 1234, false, 2345, "bla bla")
+    std::cout << format("{} {{foo}} {:_^20s} bar {0} baz {:#020B} {} {} {!s}\n", bla, "hello", 1234, false, 2345, "bla bla")
               << val(true).upper().width(20).right() << ' ' << s << ' ' << oct(234).alt() << '\n';
 
     Format fmt = compile("{}-{:c}");
@@ -85,6 +86,10 @@ int main() {
 
     const char* str = "foo bar baz";
     std::cout << slice(str, str+7) << ' ' << slice(str+8, str+11).repr() << '\n';
+
+    std::unordered_set<std::string> xs = {"foo", "bar", "baz"};
+    std::unordered_map<std::string,int> ys = {{"A",12},{"B",23},{"C",34}};
+    std::cout << format("{} {}\n", xs, ys);
 
     delete ptr;
 

@@ -36,7 +36,10 @@ namespace formatstring {
     void repr_value(std::ostream& out, const std::pair<First,Second>& value);
 
     template<typename Iter>
-    void repr_slice(std::ostream& out, Iter begin, Iter end);
+    void repr_slice(std::ostream& out, Iter begin, Iter end, char left = '[', char right = ']');
+
+    template<typename Iter>
+    void repr_map(std::ostream& out, Iter begin, Iter end, char left = '{', char right = '}');
 
     void format_value(std::ostream& out, bool value, const FormatSpec& spec);
 
@@ -57,7 +60,13 @@ namespace formatstring {
     void format_value(std::ostream& out, const char* str, const FormatSpec& spec);
 
     template<typename Iter>
-    void format_slice(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec);
+    void format_slice(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec, char left = '[', char right = ']');
+
+    template<typename T>
+    void format_value_fallback(std::ostream& out, const T& value, const FormatSpec& spec);
+
+    template<typename Iter>
+    void format_map(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec, char left = '{', char right = '}');
 
     template<std::size_t N, typename... Args>
     struct format_tail {
@@ -117,12 +126,27 @@ namespace formatstring {
     }
 
     template<typename Iter>
-    void format_slice(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec) {
+    void format_slice(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec, char left = '[', char right = ']') {
         std::stringstream buffer;
 
-        repr_slice(buffer, begin, end);
+        repr_slice(buffer, begin, end, left, right);
 
         format_value(out, buffer.str(), spec);
+    }
+
+    template<typename Iter>
+    void format_map(std::ostream& out, Iter begin, Iter end, const FormatSpec& spec, char left = '{', char right = '}') {
+        std::stringstream buffer;
+
+        repr_map(buffer, begin, end, left, right);
+
+        format_value(out, buffer.str(), spec);
+    }
+
+    template<typename T>
+    void format_value_fallback(std::ostream& out, const T& value, const FormatSpec& spec) {
+        (void)spec;
+        out << value;
     }
 
     template<typename... Args>
@@ -142,8 +166,8 @@ namespace formatstring {
     }
 
     template<typename Iter>
-    void repr_slice(std::ostream& out, Iter begin, Iter end) {
-        out.put('[');
+    void repr_slice(std::ostream& out, Iter begin, Iter end, char left = '[', char right = ']') {
+        out.put(left);
         if (begin != end) {
             repr_value(out, *begin);
 
@@ -152,9 +176,34 @@ namespace formatstring {
                 repr_value(out, *begin);
             }
         }
-        out.put(']');
+        out.put(right);
     }
 
+    template<typename K, typename V>
+    void repr_map_item(std::ostream& out, const std::pair<K,V>& item) {
+        repr_value(out, item.first);
+        out.write(": ",2);
+        repr_value(out, item.second);
+    }
+
+    template<typename Iter>
+    void repr_map(std::ostream& out, Iter begin, Iter end, char left = '{', char right = '}') {
+        out.put(left);
+        if (begin != end) {
+            repr_map_item(out, *begin);
+
+            for (++ begin; begin != end; ++ begin) {
+                out.write(", ", 2);
+                repr_map_item(out, *begin);
+            }
+        }
+        out.put(right);
+    }
+
+    template<typename T>
+    void repr_value_fallback(std::ostream& out, const T& value) {
+        out << value;
+    }
 }
 
 #endif // FORMATSTRING_FORMATVALUE_H
