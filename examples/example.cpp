@@ -78,7 +78,7 @@ int main() {
                         Example2("blub"), Example2("bla\nbla"), ptr, *ptr, ptr2, *ptr2);
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';
 
-    std::cout << format("{:020}\n", -0.0);
+    std::cout << format("{:020} {:,} {:,} {:,} {:,}\n", -0.0, 100000000000000, 1, 100, 1000.0);
 
     std::cout << format("{:.3} {:.1%} {:.2f} ({: e}) {:e} pi={:+g} {!r:_^20} '{:020}' {:.2f}\n",
                         12.12, 1.234, 1.0, 5.2, 1000000, M_PI, -1.2, -0.0, -NAN);
