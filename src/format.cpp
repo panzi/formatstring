@@ -7,12 +7,12 @@
 
 using namespace formatstring;
 
-static std::string::const_iterator parse_size(std::string::const_iterator it, std::string::const_iterator end, std::size_t* numberptr) {
+static const char* parse_size(const char* ptr, std::size_t* numberptr) {
     std::size_t number = 0;
 
     // TODO: handle integer overflow
-    for (; it != end; ++ it) {
-        char ch = *it;
+    for (; *ptr; ++ ptr) {
+        char ch = *ptr;
         if (ch < '0' || ch > '9') {
             break;
         }
@@ -22,120 +22,118 @@ static std::string::const_iterator parse_size(std::string::const_iterator it, st
 
     *numberptr = number;
 
-    return it;
+    return ptr;
 }
 
-static std::string::const_iterator parse_spec(const std::string& fmt, std::string::const_iterator it, FormatSpec* spec) {
-    std::string::const_iterator end = fmt.end();
-
-    if (it == end) {
-        return it;
+static const char* parse_spec(const char* fmt, const char* ptr, FormatSpec* spec) {
+    if (!*ptr) {
+        return ptr;
     }
 
     bool precision = false;
     bool fill = false;
 
-    switch (*(it + 1)) {
+    switch (*(ptr + 1)) {
     case '<':
         spec->alignment = FormatSpec::Left;
-        spec->fill = *it;
+        spec->fill = *ptr;
         fill = true;
-        it += 2;
+        ptr += 2;
         break;
 
     case '>':
         spec->alignment = FormatSpec::Right;
-        spec->fill = *it;
+        spec->fill = *ptr;
         fill = true;
-        it += 2;
+        ptr += 2;
         break;
 
     case '=':
         spec->alignment = FormatSpec::AfterSign;
-        spec->fill = *it;
+        spec->fill = *ptr;
         fill = true;
-        it += 2;
+        ptr += 2;
         break;
 
     case '^':
         spec->alignment = FormatSpec::Center;
-        spec->fill = *it;
+        spec->fill = *ptr;
         fill = true;
-        it += 2;
+        ptr += 2;
         break;
     }
 
-    switch (*it) {
+    switch (*ptr) {
     case '+':
         spec->sign = FormatSpec::Always;
-        ++ it;
+        ++ ptr;
         break;
 
     case '-':
         spec->sign = FormatSpec::NegativeOnly;
-        ++ it;
+        ++ ptr;
         break;
 
     case ' ':
         spec->sign = FormatSpec::SpaceForPositive;
-        ++ it;
+        ++ ptr;
         break;
     }
 
-    if (*it == '#') {
+    if (*ptr == '#') {
         spec->alternate = true;
-        ++ it;
+        ++ ptr;
     }
 
-    if (*it == '0') {
+    if (*ptr == '0') {
         if (!fill) {
             spec->fill = '0';
         }
-        ++ it;
+        ++ ptr;
     }
 
     std::size_t size = 0;
-    std::string::const_iterator next = parse_size(it, end, &size);
-    if (next != it) {
+    const char* next = parse_size(ptr, &size);
+    if (next != ptr) {
         spec->width = size;
-        it = next;
+        ptr = next;
     }
 
-    if (*it == ',') {
+    if (*ptr == ',') {
         spec->thoudsandsSeperator = true;
-        ++ it;
+        ++ ptr;
     }
 
-    if (*it == '.') {
-        ++ it;
-        if (it == fmt.end()) {
-            throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected number");
+    if (*ptr == '.') {
+        ++ ptr;
+        if (!*ptr) {
+            throw InvalidFormatStringException(fmt, ptr - fmt, "expected number");
         }
-        next = parse_size(it, end, &size);
-        if (next != it) {
+        next = parse_size(ptr, &size);
+        if (next != ptr) {
             spec->precision = size;
-            it = next;
+            ptr = next;
         }
         precision = true;
     }
 
-    char type = *it;
+    char type = *ptr;
     switch (type) {
     case 'b':
     case 'B':
         spec->type = FormatSpec::Bin;
         spec->upperCase = type == 'B';
-        ++ it;
+        ++ ptr;
         break;
 
     case 'c':
         spec->type = FormatSpec::Character;
-        ++ it;
+        ++ ptr;
         break;
 
     case 'd':
         spec->type = FormatSpec::Dec;
-        ++ it;
+        ++ ptr;
         break;
 
     case 'e':
@@ -145,7 +143,7 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
         if (!precision) {
             spec->precision = 6;
         }
-        ++ it;
+        ++ ptr;
         break;
 
     case 'f':
@@ -155,7 +153,7 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
         if (!precision) {
             spec->precision = 6;
         }
-        ++ it;
+        ++ ptr;
         break;
 
     case 'g':
@@ -165,13 +163,13 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
         if (!precision) {
             spec->precision = 6;
         }
-        ++ it;
+        ++ ptr;
         break;
 
     /*
     case 'n':
         optionsptr->type = FormatOptions::LocaleAwareNumber;
-        ++ it;
+        ++ ptr;
         break;
     */
 
@@ -179,24 +177,24 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
     case 'O':
         spec->type = FormatSpec::Oct;
         spec->upperCase = type == 'O';
-        ++ it;
+        ++ ptr;
         break;
 
     case 's':
         spec->type = FormatSpec::String;
-        ++ it;
+        ++ ptr;
         break;
 
     case 'x':
     case 'X':
         spec->type = FormatSpec::Hex;
         spec->upperCase = type == 'X';
-        ++ it;
+        ++ ptr;
         break;
 
     case '%':
         spec->type = FormatSpec::Percentage;
-        ++ it;
+        ++ ptr;
         break;
     }
 
@@ -224,10 +222,12 @@ static std::string::const_iterator parse_spec(const std::string& fmt, std::strin
         throw std::invalid_argument(msg);
     }
 
-    return it;
+    return ptr;
 }
 
-Format::Format(const std::string& fmt) : m_fmt(std::make_shared<FormatItems>()) {
+Format::Format(const std::string& fmt) : Format(fmt.c_str()) {}
+
+Format::Format(const char* fmt) : m_fmt(std::make_shared<FormatItems>()) {
     // Format string similar to Python, but a bit more limited:
     // https://docs.python.org/3/library/string.html#format-string-syntax
     //
@@ -246,16 +246,15 @@ Format::Format(const std::string& fmt) : m_fmt(std::make_shared<FormatItems>()) 
 
     std::size_t currentIndex = 0;
     std::stringbuf buffer;
-    std::string::const_iterator it = fmt.begin();
-    std::string::const_iterator end = fmt.end();
+    const char* ptr = fmt;
 
-    while (it != end) {
-        char ch = *it;
+    while (*ptr) {
+        char ch = *ptr;
 
         switch (ch) {
         case '{':
-            ++ it;
-            ch = *it;
+            ++ ptr;
+            ch = *ptr;
             if (ch == '{') {
                 buffer.sputc(ch);
             }
@@ -271,16 +270,16 @@ Format::Format(const std::string& fmt) : m_fmt(std::make_shared<FormatItems>()) 
                 Conversion conv = NoConv;
 
                 if (ch >= '0' && ch <= '9') {
-                    it = parse_size(it, end, &index);
-                    ch = *it;
+                    ptr = parse_size(ptr, &index);
+                    ch = *ptr;
                 }
                 else {
                     ++ currentIndex;
                 }
 
                 if (ch == '!') {
-                    ++ it;
-                    ch = *it;
+                    ++ ptr;
+                    ch = *ptr;
                     if (ch == 'r') {
                         conv = ReprConv;
                     }
@@ -288,20 +287,20 @@ Format::Format(const std::string& fmt) : m_fmt(std::make_shared<FormatItems>()) 
                         conv = StrConv;
                     }
                     else {
-                        throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected 'r' or 's'");
+                        throw InvalidFormatStringException(fmt, ptr - fmt, "expected 'r' or 's'");
                     }
-                    ++ it;
-                    ch = *it;
+                    ++ ptr;
+                    ch = *ptr;
                 }
 
                 if (ch == ':') {
-                    ++ it;
-                    it = parse_spec(fmt, it, &spec);
-                    ch = *it;
+                    ++ ptr;
+                    ptr = parse_spec(fmt, ptr, &spec);
+                    ch = *ptr;
                 }
 
                 if (ch != '}') {
-                    throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected '}'");
+                    throw InvalidFormatStringException(fmt, ptr - fmt, "expected '}'");
                 }
 
                 m_fmt->emplace_back(new ValueFormatItem(index, conv, spec));
@@ -309,12 +308,12 @@ Format::Format(const std::string& fmt) : m_fmt(std::make_shared<FormatItems>()) 
             break;
 
         case '}':
-            ++ it;
-            if (*it == '}') {
+            ++ ptr;
+            if (*ptr == '}') {
                 buffer.sputc(ch);
             }
             else {
-                throw InvalidFormatStringException(fmt, it - fmt.begin(), "expected '}'");
+                throw InvalidFormatStringException(fmt, ptr - fmt, "expected '}'");
             }
             break;
 
@@ -322,7 +321,7 @@ Format::Format(const std::string& fmt) : m_fmt(std::make_shared<FormatItems>()) 
             buffer.sputc(ch);
             break;
         }
-        ++ it;
+        ++ ptr;
     }
 
     if (buffer.in_avail() > 0) {
@@ -338,11 +337,13 @@ void Format::apply(std::ostream& out, const Formatters& formatters) const {
     }
 }
 
-FormatSpec::FormatSpec(const std::string& spec) : FormatSpec() {
-    std::string::const_iterator it = parse_spec(spec, spec.begin(), this);
-    if (it != spec.end()) {
-        throw InvalidFormatStringException(spec, it - spec.begin(), "expected end of string");
+FormatSpec::FormatSpec(const char* spec) : FormatSpec() {
+    const char* ptr = parse_spec(spec, spec, this);
+    if (*ptr) {
+        throw InvalidFormatStringException(spec, ptr - spec, "expected end of string");
     }
 }
+
+FormatSpec::FormatSpec(const std::string& spec) : FormatSpec(spec.c_str()) {}
 
 BoundFormat::BoundFormat(const BoundFormat& other) : m_format(other.m_format), m_formatters(other.m_formatters) {}

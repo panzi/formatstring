@@ -56,6 +56,7 @@ namespace formatstring {
         Type      type;
         bool      upperCase;
 
+        FormatSpec(const char* spec);
         FormatSpec(const std::string& spec);
 
         FormatSpec(const FormatSpec& other) = default;

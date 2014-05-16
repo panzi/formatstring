@@ -16,6 +16,7 @@ namespace formatstring {
     class Format {
     public:
         Format(const std::string& fmt);
+        Format(const char* fmt);
         Format(const Format& other);
         Format(Format&& rhs) : m_fmt(std::move(rhs.m_fmt)) {}
 
@@ -84,7 +85,12 @@ namespace formatstring {
 
     template<typename... Args>
     inline BoundFormat format(const std::string& fmt, const Args&... args) {
-        return BoundFormat(std::move(fmt), args...);
+        return BoundFormat(fmt, args...);
+    }
+
+    template<typename... Args>
+    inline BoundFormat format(const char* fmt, const Args&... args) {
+        return BoundFormat(fmt, args...);
     }
 
     template<typename OStream>
@@ -94,6 +100,10 @@ namespace formatstring {
     }
 
     inline Format compile(const std::string& fmt) {
+        return fmt;
+    }
+
+    inline Format compile(const char* fmt) {
         return fmt;
     }
 }
