@@ -40,7 +40,9 @@ namespace formatstring {
         inline static void extend(Formatters& formatters, const char last[]);
     };
 
-    template<typename T>
+    template<typename T,
+             void _format(std::ostream& out, T value, const FormatSpec& spec) = format_value,
+             void _repr(std::ostream& out, T value) = repr_value>
     class ValueFormatter : public Formatter {
     public:
         typedef T value_type;
@@ -52,19 +54,19 @@ namespace formatstring {
             case ReprConv:
             {
                 std::stringstream buffer;
-                repr_value(buffer, value);
+                _repr(buffer, value);
                 format_value(out, buffer.str(), spec);
                 break;
             }
             case StrConv:
             {
                 std::stringstream buffer;
-                format_value(buffer, value, FormatSpec());
+                _format(buffer, value, FormatSpec::DEFAULT);
                 format_value(out, buffer.str(), spec);
                 break;
             }
             default:
-                format_value(out, value, spec);
+                _format(out, value, spec);
                 break;
             }
         }
@@ -95,7 +97,7 @@ namespace formatstring {
             case StrConv:
             {
                 std::stringstream buffer;
-                _format(buffer, *value, FormatSpec());
+                _format(buffer, *value, FormatSpec::DEFAULT);
                 format_value(out, buffer.str(), spec);
                 break;
             }
@@ -142,7 +144,7 @@ namespace formatstring {
             case StrConv:
             {
                 std::stringstream buffer;
-                _format(buffer, begin, end, FormatSpec(), left, right);
+                _format(buffer, begin, end, FormatSpec::DEFAULT, left, right);
                 format_value(out, buffer.str(), spec);
                 break;
             }

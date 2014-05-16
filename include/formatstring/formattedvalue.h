@@ -15,7 +15,7 @@ namespace formatstring {
         FormattedValue(const T& value, Conversion conv, const FormatSpec& spec) :
             m_formatter(make_formatter(value)), m_conv(conv), m_spec(spec) {}
 
-        FormattedValue(Formatter* formatter, Conversion conv = NoConv, const FormatSpec& spec = FormatSpec()) :
+        FormattedValue(Formatter* formatter, Conversion conv = NoConv, const FormatSpec& spec = FormatSpec::DEFAULT) :
             m_formatter(formatter), m_conv(conv), m_spec(spec) {}
 
         FormattedValue(FormattedValue&& other) :
@@ -197,7 +197,7 @@ namespace formatstring {
 
     template<typename T>
     inline FormattedValue val(const T& value) {
-        return FormattedValue(value,NoConv,FormatSpec());
+        return FormattedValue(value,NoConv,FormatSpec::DEFAULT);
     }
 
     template<typename Iter>
@@ -206,7 +206,7 @@ namespace formatstring {
     }
 
     inline FormattedValue val(const char str[]) {
-        return FormattedValue(str,NoConv,FormatSpec());
+        return FormattedValue(str,NoConv,FormatSpec::DEFAULT);
     }
 
     template<typename T>

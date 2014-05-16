@@ -8,6 +8,8 @@ namespace formatstring {
 
     struct FormatSpec {
 
+        static const FormatSpec DEFAULT;
+
         enum Alignment {
             DefaultAlignment,
             Left,

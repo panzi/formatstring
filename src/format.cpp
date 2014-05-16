@@ -337,6 +337,8 @@ void Format::apply(std::ostream& out, const Formatters& formatters) const {
     }
 }
 
+const FormatSpec FormatSpec::DEFAULT;
+
 FormatSpec::FormatSpec(const char* spec) : FormatSpec() {
     const char* ptr = parse_spec(spec, spec, this);
     if (*ptr) {
