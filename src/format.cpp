@@ -353,10 +353,10 @@ void formatstring::parse_format(const wchar_t* fmt, BasicFormatItem<wchar_t>::Li
     parse_format_internal(fmt, items);
 }
 
-template<> const FormatSpec FormatSpec::DEFAULT = FormatSpec();
+template<> const FormatSpec    FormatSpec::DEFAULT    = FormatSpec();
 template<> const U16FormatSpec U16FormatSpec::DEFAULT = U16FormatSpec();
 template<> const U32FormatSpec U32FormatSpec::DEFAULT = U32FormatSpec();
-template<> const WFormatSpec WFormatSpec::DEFAULT = WFormatSpec();
+template<> const WFormatSpec   WFormatSpec::DEFAULT   = WFormatSpec();
 
 template<typename Char>
 static inline void parse_spec_templ(const Char* str, BasicFormatSpec<Char>* spec) {
