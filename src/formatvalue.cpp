@@ -11,13 +11,15 @@
 
 using namespace formatstring;
 
-struct group_thousands : public std::numpunct<char> {
+template<typename Char>
+struct group_thousands : public std::numpunct<Char> {
     std::string do_grouping() const { return "\03"; }
     char do_thousands_sep() const { return ','; }
     char do_decimal_point() const { return '.'; }
 };
 
-struct no_grouping : public group_thousands {
+template<typename Char>
+struct no_grouping : public group_thousands<Char> {
     std::string do_grouping() const { return ""; }
 };
 
@@ -36,68 +38,73 @@ template<> struct make_unsigned<unsigned int>       { typedef unsigned int      
 template<> struct make_unsigned<unsigned long>      { typedef unsigned long      type; };
 template<> struct make_unsigned<unsigned long long> { typedef unsigned long long type; };
 
-static inline void fill(std::ostream& out, char fill, std::size_t width) {
+template<typename Char>
+static inline void fill(std::basic_ostream<Char>& out, Char fill, std::size_t width) {
     for (; width > 0; -- width) { out.put(fill); }
 }
 
-template<typename Int, typename UInt = typename make_unsigned<Int>::type>
-static inline void format_integer(std::ostream& out, Int value, const FormatSpec& spec);
+template<typename Char, typename Int, typename UInt = typename make_unsigned<Int>::type>
+static inline void format_integer(std::basic_ostream<Char>& out, Int value, const BasicFormatSpec<Char>& spec);
 
-template<typename Float>
-static inline void format_float(std::ostream& out, Float value, const FormatSpec& spec);
+template<typename Char, typename Float>
+static inline void format_float(std::basic_ostream<Char>& out, Float value, const BasicFormatSpec<Char>& spec);
 
-static inline void format_string(std::ostream& out, const char value[], const FormatSpec& spec);
+template<typename Char>
+static inline void format_string(std::basic_ostream<Char>& out, const Char value[], const BasicFormatSpec<Char>& spec);
 
-template<typename Int, typename UInt = typename make_unsigned<Int>::type>
-static inline void format_integer(std::ostream& out, Int value, const FormatSpec& spec) {
-    if (spec.type == FormatSpec::Character) {
-        char str[2] = {(char)value, 0};
+template<typename Char, typename Int, typename UInt = typename make_unsigned<Int>::type>
+static inline void format_integer(std::basic_ostream<Char>& out, Int value, const BasicFormatSpec<Char>& spec) {
+    typedef BasicFormatSpec<Char> Spec;
+
+    if (spec.type == Spec::Character) {
+        Char str[2] = {(Char)value, 0};
         FormatSpec strspec = spec;
-        strspec.type = FormatSpec::String;
+        strspec.type = Spec::String;
         format_string(out, str, strspec);
         return;
     }
     else if (spec.isDecimalType()) {
-        format_float<double>(out, value, spec);
+        format_float<char,double>(out, value, spec);
         return;
     }
 
     bool negative = value < 0;
     UInt abs = negative ? -value : value;
-    std::string prefix;
+    std::basic_string<Char> prefix;
 
     switch (spec.sign) {
-    case FormatSpec::NegativeOnly:
-    case FormatSpec::DefaultSign:
+    case Spec::NegativeOnly:
+    case Spec::DefaultSign:
         if (negative) {
-            prefix += '-';
+            prefix += (Char)'-';
         }
         break;
 
-    case FormatSpec::Always:
-        prefix += negative ? '-' : '+';
+    case Spec::Always:
+        prefix += negative ? (Char)'-' : (Char)'+';
         break;
 
-    case FormatSpec::SpaceForPositive:
-        prefix += negative ? '-' : ' ';
+    case Spec::SpaceForPositive:
+        prefix += negative ? (Char)'-' : (Char)' ';
         break;
     }
 
-    std::stringstream buffer;
-    std::locale loc(std::locale(), spec.thoudsandsSeperator ? new group_thousands() : new no_grouping());
+    std::basic_ostringstream<Char> buffer;
+    std::locale loc(std::locale(), spec.thoudsandsSeperator ? new group_thousands<Char>() : new no_grouping<Char>());
 
     buffer.imbue(loc);
 
     switch (spec.type) {
-    case FormatSpec::Generic:
-    case FormatSpec::Dec:
-    case FormatSpec::String:
+    case Spec::Generic:
+    case Spec::Dec:
+    case Spec::String:
         buffer << abs;
         break;
 
-    case FormatSpec::Bin:
+    case Spec::Bin:
         if (spec.alternate) {
-            prefix += spec.upperCase ? "0B" : "0b";
+            prefix += (Char)'0';
+            prefix += spec.upperCase ? (Char)'B' : (Char)'b';
         }
         if (abs == 0) {
             buffer.put('0');
@@ -115,17 +122,19 @@ static inline void format_integer(std::ostream& out, Int value, const FormatSpec
         }
         break;
 
-    case FormatSpec::Oct:
+    case Spec::Oct:
         if (spec.alternate) {
-            prefix += spec.upperCase ? "0O" : "0o";
+            prefix += (Char)'0';
+            prefix += spec.upperCase ? (Char)'O' : (Char)'o';
         }
         buffer.setf(std::ios::oct, std::ios::basefield);
         buffer << abs;
         break;
 
-    case FormatSpec::Hex:
+    case Spec::Hex:
         if (spec.alternate) {
-            prefix += spec.upperCase ? "0X" : "0x";
+            prefix += (Char)'0';
+            prefix += spec.upperCase ? (Char)'X' : (Char)'x';
         }
         buffer.setf(std::ios::hex, std::ios::basefield);
         if (spec.upperCase) {
@@ -138,25 +147,25 @@ static inline void format_integer(std::ostream& out, Int value, const FormatSpec
         break;
     }
 
-    std::string num = buffer.str();
-    std::string::size_type length = prefix.length() + num.length();
+    std::basic_string<Char> num = buffer.str();
+    typename std::basic_string<Char>::size_type length = prefix.length() + num.length();
 
     if (length < spec.width) {
         std::size_t padding = spec.width - length;
         switch (spec.alignment) {
-        case FormatSpec::Left:
+        case Spec::Left:
             out.write(prefix.c_str(), prefix.size());
             out.write(num.c_str(), num.size());
             fill(out, spec.fill, padding);
             break;
 
-        case FormatSpec::Right:
+        case Spec::Right:
             fill(out, spec.fill, padding);
             out.write(prefix.c_str(), prefix.size());
             out.write(num.c_str(), num.size());
             break;
 
-        case FormatSpec::Center:
+        case Spec::Center:
         {
             std::size_t before = padding / 2;
             fill(out, spec.fill, before);
@@ -166,8 +175,8 @@ static inline void format_integer(std::ostream& out, Int value, const FormatSpec
             break;
         }
 
-        case FormatSpec::AfterSign:
-        case FormatSpec::DefaultAlignment:
+        case Spec::AfterSign:
+        case Spec::DefaultAlignment:
             out.write(prefix.c_str(), prefix.size());
             fill(out, spec.fill, padding);
             out.write(num.c_str(), num.size());
@@ -180,35 +189,37 @@ static inline void format_integer(std::ostream& out, Int value, const FormatSpec
     }
 }
 
-template<typename Float>
-static inline void format_float(std::ostream& out, Float value, const FormatSpec& spec) {
-    if (!spec.isDecimalType() && spec.type != FormatSpec::Generic) {
+template<typename Char, typename Float>
+static inline void format_float(std::basic_ostream<Char>& out, Float value, const BasicFormatSpec<Char>& spec) {
+    typedef BasicFormatSpec<Char> Spec;
+
+    if (!spec.isDecimalType() && spec.type != Spec::Generic) {
         throw std::invalid_argument("Cannot use floating point numbers with non-decimal format specifier.");
     }
 
     bool negative = std::signbit(value);
     Float abs = negative ? -value : value;
-    std::string prefix;
+    std::basic_string<Char> prefix;
 
     switch (spec.sign) {
-    case FormatSpec::NegativeOnly:
-    case FormatSpec::DefaultSign:
+    case Spec::NegativeOnly:
+    case Spec::DefaultSign:
         if (negative) {
-            prefix += '-';
+            prefix += (Char)'-';
         }
         break;
 
-    case FormatSpec::Always:
-        prefix += negative ? '-' : '+';
+    case Spec::Always:
+        prefix += negative ? (Char)'-' : (Char)'+';
         break;
 
-    case FormatSpec::SpaceForPositive:
-        prefix += negative ? '-' : ' ';
+    case Spec::SpaceForPositive:
+        prefix += negative ? (Char)'-' : (Char)' ';
         break;
     }
 
-    std::stringstream buffer;
-    std::locale loc(std::locale(), spec.thoudsandsSeperator ? new group_thousands() : new no_grouping());
+    std::basic_ostringstream<Char> buffer;
+    std::locale loc(std::locale(), spec.thoudsandsSeperator ? new group_thousands<Char>() : new no_grouping<Char>());
 
     buffer.imbue(loc);
 
@@ -217,20 +228,20 @@ static inline void format_float(std::ostream& out, Float value, const FormatSpec
     }
 
     switch (spec.type) {
-    case FormatSpec::Exp:
+    case Spec::Exp:
         buffer.setf(std::ios::scientific, std::ios::floatfield);
         buffer.precision(spec.precision);
         buffer << abs;
         break;
 
-    case FormatSpec::Fixed:
+    case Spec::Fixed:
         buffer.setf(std::ios::fixed, std::ios::floatfield);
         buffer.precision(spec.precision);
         buffer << abs;
         break;
 
-    case FormatSpec::Generic:
-    case FormatSpec::General:
+    case Spec::Generic:
+    case Spec::General:
     {
         int exponent = std::log10(abs);
         int precision = spec.precision < 1 ? 1 : spec.precision;
@@ -245,7 +256,7 @@ static inline void format_float(std::ostream& out, Float value, const FormatSpec
         buffer << abs;
         break;
     }
-    case FormatSpec::Percentage:
+    case Spec::Percentage:
         buffer.setf(std::ios::fixed, std::ios::floatfield);
         buffer.precision(spec.precision);
         buffer << (abs * 100);
@@ -257,24 +268,24 @@ static inline void format_float(std::ostream& out, Float value, const FormatSpec
     }
 
     std::string num = buffer.str();
-    std::string::size_type length = prefix.size() + num.size();
+    typename std::string::size_type length = prefix.size() + num.size();
 
     if (length < spec.width) {
         std::size_t padding = spec.width - length;
         switch (spec.alignment) {
-        case FormatSpec::Left:
+        case Spec::Left:
             out.write(prefix.c_str(), prefix.size());
             out.write(num.c_str(), num.size());
             fill(out, spec.fill, padding);
             break;
 
-        case FormatSpec::Right:
+        case Spec::Right:
             fill(out, spec.fill, padding);
             out.write(prefix.c_str(), prefix.size());
             out.write(num.c_str(), num.size());
             break;
 
-        case FormatSpec::Center:
+        case Spec::Center:
         {
             std::size_t before = padding / 2;
             fill(out, spec.fill, before);
@@ -284,8 +295,8 @@ static inline void format_float(std::ostream& out, Float value, const FormatSpec
             break;
         }
 
-        case FormatSpec::AfterSign:
-        case FormatSpec::DefaultAlignment:
+        case Spec::AfterSign:
+        case Spec::DefaultAlignment:
             out.write(prefix.c_str(), prefix.size());
             fill(out, spec.fill, padding);
             out.write(num.c_str(), num.size());
@@ -298,8 +309,11 @@ static inline void format_float(std::ostream& out, Float value, const FormatSpec
     }
 }
 
-static inline void format_string(std::ostream& out, const char value[], const FormatSpec& spec) {
-    if (spec.sign != FormatSpec::DefaultSign) {
+template<typename Char>
+static inline void format_string(std::basic_ostream<Char>& out, const Char value[], const BasicFormatSpec<Char>& spec) {
+    typedef BasicFormatSpec<Char> Spec;
+
+    if (spec.sign != Spec::DefaultSign) {
         throw std::invalid_argument("Sign not allowed with string or character");
     }
 
@@ -307,13 +321,13 @@ static inline void format_string(std::ostream& out, const char value[], const Fo
         throw std::invalid_argument("Cannot specify ',' for string");
     }
 
-    if (spec.alternate && spec.type != FormatSpec::Character) {
+    if (spec.alternate && spec.type != Spec::Character) {
         throw std::invalid_argument("Alternate form (#) not allowed in string format specifier");
     }
 
     switch (spec.type) {
-    case FormatSpec::Generic:
-    case FormatSpec::String:
+    case Spec::Generic:
+    case Spec::String:
         break;
 
     default:
@@ -324,21 +338,21 @@ static inline void format_string(std::ostream& out, const char value[], const Fo
     if (spec.width > 0 && length < (std::size_t)spec.width) {
         std::size_t padding = spec.width - length;
         switch (spec.alignment) {
-        case FormatSpec::AfterSign:
+        case Spec::AfterSign:
             throw std::invalid_argument("'=' alignment not allowed in string or character format specifier");
 
-        case FormatSpec::DefaultAlignment:
-        case FormatSpec::Left:
+        case Spec::DefaultAlignment:
+        case Spec::Left:
             out.write(value, length);
             fill(out, spec.fill, padding);
             break;
 
-        case FormatSpec::Right:
+        case Spec::Right:
             fill(out, spec.fill, padding);
             out.write(value, length);
             break;
 
-        case FormatSpec::Center:
+        case Spec::Center:
             std::size_t before = padding / 2;
             fill(out, spec.fill, before);
             out.write(value, length);
@@ -353,7 +367,7 @@ static inline void format_string(std::ostream& out, const char value[], const Fo
 
 void formatstring::format_value(std::ostream& out, bool value, const FormatSpec& spec) {
     if (spec.isNumberType()) {
-        format_integer<unsigned int>(out, value ? 1 : 0, spec);
+        format_integer<char,unsigned int>(out, value ? 1 : 0, spec);
     }
     else {
         const char *str = spec.upperCase ?
@@ -373,24 +387,24 @@ void formatstring::format_value(std::ostream& out, char value, const FormatSpec&
         format_string(out, str, strspec);
     }
     else {
-        format_integer<int>(out, value, spec);
+        format_integer<char,int>(out, value, spec);
     }
 }
 
 void formatstring::format_value(std::ostream& out, short value, const FormatSpec& spec) {
-    format_integer<short>(out, value, spec);
+    format_integer<char,short>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, int value, const FormatSpec& spec) {
-    format_integer<int>(out, value, spec);
+    format_integer<char,int>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, long value, const FormatSpec& spec) {
-    format_integer<long>(out, value, spec);
+    format_integer<char,long>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, long long value, const FormatSpec& spec) {
-    format_integer<long long>(out, value, spec);
+    format_integer<char,long long>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, unsigned char value, const FormatSpec& spec) {
@@ -401,32 +415,32 @@ void formatstring::format_value(std::ostream& out, unsigned char value, const Fo
         format_string(out, str, strspec);
     }
     else {
-        format_integer<unsigned int>(out, value, spec);
+        format_integer<char,unsigned int>(out, value, spec);
     }
 }
 
 void formatstring::format_value(std::ostream& out, unsigned short value, const FormatSpec& spec) {
-    format_integer<unsigned short>(out, value, spec);
+    format_integer<char,unsigned short>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, unsigned int value, const FormatSpec& spec) {
-    format_integer<unsigned int>(out, value, spec);
+    format_integer<char,unsigned int>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, unsigned long value, const FormatSpec& spec) {
-    format_integer<unsigned long>(out, value, spec);
+    format_integer<char,unsigned long>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, unsigned long long value, const FormatSpec& spec) {
-    format_integer<unsigned long long>(out, value, spec);
+    format_integer<char,unsigned long long>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, float value, const FormatSpec& spec) {
-    format_float<float>(out, value, spec);
+    format_float<char,float>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, double value, const FormatSpec& spec) {
-    format_float<double>(out, value, spec);
+    format_float<char,double>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, const std::string& str, const FormatSpec& spec) {
