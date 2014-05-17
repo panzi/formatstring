@@ -23,7 +23,7 @@ namespace formatstring {
         template<typename... Args>
         void format(std::ostream& out, const Args&... args) const {
             Formatters formatters;
-            Formatter::extend(formatters, args...);
+            unpack_formatters(formatters, args...);
             apply(out, formatters);
         }
 
@@ -46,12 +46,12 @@ namespace formatstring {
 
         template<typename... Args>
         BoundFormat(const Format& format, const Args&... args) : m_format(format), m_formatters(std::make_shared<Formatters>()) {
-            Formatter::extend(*m_formatters, args...);
+            unpack_formatters<char>(*m_formatters, args...);
         }
 
         template<typename... Args>
         BoundFormat(Format&& format, const Args&... args) : m_format(std::move(format)), m_formatters(std::make_shared<Formatters>()) {
-            Formatter::extend(*m_formatters, args...);
+            unpack_formatters<char>(*m_formatters, args...);
         }
 
         inline void write_into(std::ostream& out) const {

@@ -19,26 +19,31 @@ namespace formatstring {
 
     class Format;
     class FormatSpec;
-    class Formatter;
 
-    typedef std::vector< std::unique_ptr<Formatter> > Formatters;
-
-    class Formatter {
+    template<typename Char>
+    class BasicFormatter {
     public:
-        virtual ~Formatter() {}
-        virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const = 0;
+        typedef Char char_type;
+        typedef std::vector< std::unique_ptr< BasicFormatter<char_type> > > List;
 
-        template<typename First, typename... Rest>
-        inline static void extend(Formatters& formatters, const First& first, const Rest&... rest);
-
-        template<typename... Rest>
-        inline static void extend(Formatters& formatters, const char first[], const Rest&... rest);
-
-        template<typename Last>
-        inline static void extend(Formatters& formatters, const Last& last);
-
-        inline static void extend(Formatters& formatters, const char last[]);
+        virtual ~BasicFormatter() {}
+        virtual void format(std::basic_ostream<char_type>& out, Conversion conv, const FormatSpec& spec) const = 0;
     };
+
+    typedef BasicFormatter<char> Formatter;
+    typedef Formatter::List Formatters;
+
+    template<typename Char, typename First, typename... Rest>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const First& first, const Rest&... rest);
+
+    template<typename Char, typename... Rest>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char first[], const Rest&... rest);
+
+    template<typename Char, typename Last>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const Last& last);
+
+    template<typename Char>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char last[]);
 
     template<typename T,
              void _format(std::ostream& out, T value, const FormatSpec& spec) = format_value,
@@ -136,14 +141,14 @@ namespace formatstring {
             switch (conv) {
             case ReprConv:
             {
-                std::stringstream buffer;
+                std::ostringstream buffer;
                 _repr(buffer, begin, end, left, right);
                 format_value(out, buffer.str(), spec);
                 break;
             }
             case StrConv:
             {
-                std::stringstream buffer;
+                std::ostringstream buffer;
                 _format(buffer, begin, end, FormatSpec::DEFAULT, left, right);
                 format_value(out, buffer.str(), spec);
                 break;
@@ -231,24 +236,25 @@ namespace formatstring {
         return new SliceFormatter<typename std::unordered_map<K,V>::const_iterator,'{','}',format_map,repr_map>(value.begin(), value.end());
     }
 
-    template<typename First, typename... Rest>
-    inline void Formatter::extend(Formatters& formatters, const First& first, const Rest&... rest) {
+    template<typename Char, typename First, typename... Rest>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const First& first, const Rest&... rest) {
         formatters.emplace_back(make_formatter(first));
-        extend(formatters, rest...);
+        unpack_formatters<Char, Rest...>(formatters, rest...);
     }
 
-    template<typename... Rest>
-    inline void Formatter::extend(Formatters& formatters, const char first[], const Rest&... rest) {
+    template<typename Char, typename... Rest>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char first[], const Rest&... rest) {
         formatters.emplace_back(make_formatter(first));
-        extend(formatters, rest...);
+        unpack_formatters(formatters, rest...);
     }
 
-    template<typename Last>
-    inline void Formatter::extend(Formatters& formatters, const Last& last) {
+    template<typename Char, typename Last>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const Last& last) {
         formatters.emplace_back(make_formatter(last));
     }
 
-    inline void Formatter::extend(Formatters& formatters, const char last[]) {
+    template<typename Char>
+    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char last[]) {
         formatters.emplace_back(make_formatter(last));
     }
 }
