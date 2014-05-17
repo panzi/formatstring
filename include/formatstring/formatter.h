@@ -12,13 +12,12 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "formatstring/format.h"
 #include "formatstring/formatvalue.h"
 #include "formatstring/conversion.h"
+#include "formatstring/formatspec.h"
 
 namespace formatstring {
-
-    class Format;
-    class FormatSpec;
 
     template<typename Char>
     class BasicFormatter {
@@ -27,7 +26,7 @@ namespace formatstring {
         typedef std::vector< std::unique_ptr< BasicFormatter<char_type> > > List;
 
         virtual ~BasicFormatter() {}
-        virtual void format(std::basic_ostream<char_type>& out, Conversion conv, const FormatSpec& spec) const = 0;
+        virtual void format(std::basic_ostream<char_type>& out, Conversion conv, const BasicFormatSpec<Char>& spec) const = 0;
     };
 
     typedef BasicFormatter<char> Formatter;

@@ -7,13 +7,18 @@
 
 namespace formatstring {
 
-    class FormatItem {
+    template<typename Char>
+    class BasicFormatItem {
     public:
-        virtual ~FormatItem() {}
-        virtual void apply(std::ostream& out, const Formatters& formatters) const = 0;
+        typedef Char char_type;
+        typedef std::vector< std::unique_ptr< BasicFormatItem<Char> > > List;
+
+        virtual ~BasicFormatItem() {}
+        virtual void apply(std::basic_ostream<Char>& out, const typename BasicFormatter<Char>::List& formatters) const = 0;
     };
 
-    typedef std::vector< std::unique_ptr<FormatItem> > FormatItems;
+    typedef BasicFormatItem<char> FormatItem;
+    typedef FormatItem::List FormatItems;
 }
 
 #endif // UNISTR_FORMATITEM_H

@@ -9,15 +9,13 @@ namespace formatstring {
 
     class InvalidFormatStringException : public std::invalid_argument {
     public:
-        InvalidFormatStringException(const std::string& str, std::string::size_type pos, const char* what);
+        InvalidFormatStringException(std::string::size_type pos, const char* what);
 
-        const std::string& str() const { return m_str; }
         std::string::size_type position() const { return m_pos; }
 
     private:
-        std::string message(const std::string& str, std::string::size_type pos, const char* what);
+        std::string message(std::string::size_type pos, const char* what);
 
-        std::string m_str;
         std::string::size_type m_pos;
     };
 

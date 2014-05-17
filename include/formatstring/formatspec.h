@@ -6,9 +6,26 @@
 
 namespace formatstring {
 
-    struct FormatSpec {
+    template<typename Char>
+    struct BasicFormatSpec;
 
-        static const FormatSpec DEFAULT;
+    typedef BasicFormatSpec<char> FormatSpec;
+    typedef BasicFormatSpec<char16_t> U16FormatSpec;
+    typedef BasicFormatSpec<char32_t> U32FormatSpec;
+    typedef BasicFormatSpec<wchar_t> WFormatSpec;
+
+    void parse_spec(const char* str, FormatSpec* spec);
+    void parse_spec(const char16_t* str, U16FormatSpec* spec);
+    void parse_spec(const char32_t* str, U32FormatSpec* spec);
+    void parse_spec(const wchar_t* str, WFormatSpec* spec);
+
+    template<typename Char>
+    struct BasicFormatSpec {
+        typedef Char char_type;
+        typedef BasicFormatSpec<char_type> self_type;
+
+        static const self_type DEFAULT;
+        static const int DEFAULT_PRECISION = 12;
 
         enum Alignment {
             DefaultAlignment,
@@ -48,7 +65,7 @@ namespace formatstring {
             SpaceForPositive
         };
 
-        char      fill;
+        char_type fill;
         Alignment alignment;
         Sign      sign;
         bool      alternate;
@@ -58,16 +75,19 @@ namespace formatstring {
         Type      type;
         bool      upperCase;
 
-        FormatSpec(const char* spec);
-        FormatSpec(const std::string& spec);
+        BasicFormatSpec(const char_type* spec) : BasicFormatSpec() {
+            parse_spec(spec, this);
+        }
 
-        FormatSpec(const FormatSpec& other) = default;
+        BasicFormatSpec(const std::basic_string<char_type>& spec) : BasicFormatSpec(spec.c_str()) {}
 
-        inline FormatSpec() :
+        BasicFormatSpec(const self_type& other) = default;
+
+        inline BasicFormatSpec() :
             fill(' '), alignment(DefaultAlignment), sign(DefaultSign), alternate(false), width(0),
-            thoudsandsSeperator(false), precision(12), type(Generic), upperCase(false) {}
+            thoudsandsSeperator(false), precision(DEFAULT_PRECISION), type(Generic), upperCase(false) {}
 
-        FormatSpec& operator= (const FormatSpec& other) = default;
+        self_type& operator= (const self_type& other) = default;
 
         inline bool isNumberType() const {
             switch (type) {
@@ -125,7 +145,6 @@ namespace formatstring {
             }
         }
     };
-
 }
 
 #endif // FORMATSTRING_FORMATSPEC_H

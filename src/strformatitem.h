@@ -5,15 +5,24 @@
 
 namespace formatstring {
 
-    class StrFormatItem : public FormatItem {
+    template<typename Char>
+    class BasicStrFormatItem : public BasicFormatItem<Char> {
     public:
-        StrFormatItem(const std::string& str);
+        typedef Char char_type;
 
-        virtual void apply(std::ostream& out, const Formatters& formatters) const;
+        BasicStrFormatItem(const Char* str) : m_str(str) {}
+        BasicStrFormatItem(const std::basic_string<Char>& str) : m_str(str) {}
+
+        virtual void apply(std::basic_ostream<Char>& out, const typename BasicFormatter<Char>::List& formatters) const {
+            (void)formatters;
+            out << m_str;
+        }
 
     private:
-        std::string m_str;
+        std::basic_string<Char> m_str;
     };
+
+    typedef BasicStrFormatItem<char> StrFormatItem;
 
 }
 
