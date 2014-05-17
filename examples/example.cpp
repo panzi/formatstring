@@ -91,6 +91,9 @@ int main() {
     std::unordered_map<std::string,int> ys = {{"A",12},{"B",23},{"C",34}};
     std::cout << format("{} {}\n", xs, ys);
 
+    // TODO:
+//    std::wcout << format(L"wstring {} {:_^3} {}\n", 12, L'A', arr);
+
     delete ptr;
 
     return 0;
