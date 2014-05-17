@@ -164,15 +164,17 @@ namespace formatstring {
 
     inline ValueFormatter<bool>* make_formatter(bool value) { return new ValueFormatter<bool>(value); }
 
-    inline ValueFormatter<char>*  make_formatter(char  value) { return new ValueFormatter<char>(value); }
-    inline ValueFormatter<short>* make_formatter(short value) { return new ValueFormatter<short>(value); }
-    inline ValueFormatter<int>*   make_formatter(int   value) { return new ValueFormatter<int>(value); }
-    inline ValueFormatter<long>*  make_formatter(long  value) { return new ValueFormatter<long>(value); }
+    inline ValueFormatter<char>*      make_formatter(char      value) { return new ValueFormatter<char>(value); }
+    inline ValueFormatter<short>*     make_formatter(short     value) { return new ValueFormatter<short>(value); }
+    inline ValueFormatter<int>*       make_formatter(int       value) { return new ValueFormatter<int>(value); }
+    inline ValueFormatter<long>*      make_formatter(long      value) { return new ValueFormatter<long>(value); }
+    inline ValueFormatter<long long>* make_formatter(long long value) { return new ValueFormatter<long long>(value); }
 
-    inline ValueFormatter<unsigned char>*  make_formatter(unsigned char  value) { return new ValueFormatter<unsigned char>(value); }
-    inline ValueFormatter<unsigned short>* make_formatter(unsigned short value) { return new ValueFormatter<unsigned short>(value); }
-    inline ValueFormatter<unsigned int>*   make_formatter(unsigned int   value) { return new ValueFormatter<unsigned int>(value); }
-    inline ValueFormatter<unsigned long>*  make_formatter(unsigned long  value) { return new ValueFormatter<unsigned long>(value); }
+    inline ValueFormatter<unsigned char>*      make_formatter(unsigned char      value) { return new ValueFormatter<unsigned char>(value); }
+    inline ValueFormatter<unsigned short>*     make_formatter(unsigned short     value) { return new ValueFormatter<unsigned short>(value); }
+    inline ValueFormatter<unsigned int>*       make_formatter(unsigned int       value) { return new ValueFormatter<unsigned int>(value); }
+    inline ValueFormatter<unsigned long>*      make_formatter(unsigned long      value) { return new ValueFormatter<unsigned long>(value); }
+    inline ValueFormatter<unsigned long long>* make_formatter(unsigned long long value) { return new ValueFormatter<unsigned long long>(value); }
 
     inline ValueFormatter<float>*  make_formatter(float  value) { return new ValueFormatter<float>(value); }
     inline ValueFormatter<double>* make_formatter(double value) { return new ValueFormatter<double>(value); }

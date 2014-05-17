@@ -24,15 +24,17 @@ struct no_grouping : public group_thousands {
 template<typename Int>
 struct make_unsigned;
 
-template<> struct make_unsigned<char>  { typedef unsigned char  type; };
-template<> struct make_unsigned<short> { typedef unsigned short type; };
-template<> struct make_unsigned<int>   { typedef unsigned int   type; };
-template<> struct make_unsigned<long>  { typedef unsigned long  type; };
+template<> struct make_unsigned<char>      { typedef unsigned char      type; };
+template<> struct make_unsigned<short>     { typedef unsigned short     type; };
+template<> struct make_unsigned<int>       { typedef unsigned int       type; };
+template<> struct make_unsigned<long>      { typedef unsigned long      type; };
+template<> struct make_unsigned<long long> { typedef unsigned long long type; };
 
-template<> struct make_unsigned<unsigned char>  { typedef unsigned char  type; };
-template<> struct make_unsigned<unsigned short> { typedef unsigned short type; };
-template<> struct make_unsigned<unsigned int>   { typedef unsigned int   type; };
-template<> struct make_unsigned<unsigned long>  { typedef unsigned long  type; };
+template<> struct make_unsigned<unsigned char>      { typedef unsigned char      type; };
+template<> struct make_unsigned<unsigned short>     { typedef unsigned short     type; };
+template<> struct make_unsigned<unsigned int>       { typedef unsigned int       type; };
+template<> struct make_unsigned<unsigned long>      { typedef unsigned long      type; };
+template<> struct make_unsigned<unsigned long long> { typedef unsigned long long type; };
 
 static inline void fill(std::ostream& out, char fill, std::size_t width) {
     for (; width > 0; -- width) { out.put(fill); }
@@ -387,6 +389,10 @@ void formatstring::format_value(std::ostream& out, long value, const FormatSpec&
     format_integer<long>(out, value, spec);
 }
 
+void formatstring::format_value(std::ostream& out, long long value, const FormatSpec& spec) {
+    format_integer<long long>(out, value, spec);
+}
+
 void formatstring::format_value(std::ostream& out, unsigned char value, const FormatSpec& spec) {
     if (spec.type == FormatSpec::Generic || spec.isStringType()) {
         char str[2] = { (char)value, 0 };
@@ -409,6 +415,10 @@ void formatstring::format_value(std::ostream& out, unsigned int value, const For
 
 void formatstring::format_value(std::ostream& out, unsigned long value, const FormatSpec& spec) {
     format_integer<unsigned long>(out, value, spec);
+}
+
+void formatstring::format_value(std::ostream& out, unsigned long long value, const FormatSpec& spec) {
+    format_integer<unsigned long long>(out, value, spec);
 }
 
 void formatstring::format_value(std::ostream& out, float value, const FormatSpec& spec) {
