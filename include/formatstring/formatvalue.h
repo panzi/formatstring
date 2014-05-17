@@ -9,8 +9,6 @@
 
 namespace formatstring {
 
-    class FormattedValue;
-
     inline void repr_value(std::ostream& out, bool value) { out << (value ? "true" : "false"); }
 
     void repr_value(std::ostream& out, char value);

@@ -26,12 +26,13 @@ std::ostream& operator << (std::ostream& out, const Example1& value) {
     return out << "<Example1 " << value.member << ">";
 }
 
+template<typename Char>
 class Example2Formatter : public Formatter {
 public:
     Example2Formatter(const Example2* value) : value(value) {}
 
-    virtual void format(std::ostream& out, Conversion conv, const FormatSpec& spec) const {
-        std::stringstream buffer;
+    virtual void format(std::basic_ostream<Char>& out, Conversion conv, const BasicFormatSpec<Char>& spec) const {
+        std::basic_ostringstream<Char> buffer;
 
         switch (conv) {
         case ReprConv:
@@ -50,8 +51,9 @@ private:
     const Example2* value;
 };
 
-Example2Formatter* make_formatter(const Example2& value) {
-    return new Example2Formatter(&value);
+template<typename Char>
+Example2Formatter<Char>* make_formatter(const Example2& value) {
+    return new Example2Formatter<Char>(&value);
 }
 
 int main() {
@@ -61,7 +63,9 @@ int main() {
     std::string bla = "bla";
     std::string s = hex(123);
     std::cout << format("{} {{foo}} {:_^20s} bar {0} baz {:#020B} {} {} {!s}\n", bla, "hello", 1234, false, 2345, "bla bla")
-              << val(true).upper().width(20).right() << ' ' << s << ' ' << oct(234).alt() << '\n';
+              << val(true).upper().width(20).right() << '\n'
+              << val(true," >20S") << '\n'
+              << s << ' ' << oct(234).alt() << '\n';
 
     Format fmt = compile("{}-{:c}");
 
@@ -78,6 +82,8 @@ int main() {
     std::cout << format("{}, {!r}, ptr: {!s}, *ptr: {}, shared_ptr: {}, *shared_ptr: {}\n",
                         Example2("blub"), Example2("bla\nbla"), ptr, *ptr, ptr2, *ptr2);
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';
+
+    std::cout << bin(1234567890).alt() << ' ' << oct(1234567890).alt() << ' ' << dec(1234567890).alt() << ' ' << hex(1234567890).alt() << '\n';
 
     std::cout << format("{:020} {:,} {:,} {:,} {:,}\n", -0.0, 100000000000000, 1, 100, 1000.0);
 

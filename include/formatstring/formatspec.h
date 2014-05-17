@@ -89,6 +89,18 @@ namespace formatstring {
 
         self_type& operator= (const self_type& other) = default;
 
+        self_type& operator= (const std::basic_string<Char>& spec) {
+            *this = self_type::DEFAULT;
+            parse_spec(spec.c_str(), this);
+            return *this;
+        }
+
+        self_type& operator= (const Char* spec) {
+            *this = self_type::DEFAULT;
+            parse_spec(spec, this);
+            return *this;
+        }
+
         inline bool isNumberType() const {
             switch (type) {
             case Bin:

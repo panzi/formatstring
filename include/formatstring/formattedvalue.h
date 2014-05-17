@@ -9,174 +9,187 @@
 
 namespace formatstring {
 
-    class FormattedValue {
-    public:
-        template<typename T>
-        FormattedValue(const T& value, Conversion conv, const FormatSpec& spec) :
-            m_formatter(make_formatter(value)), m_conv(conv), m_spec(spec) {}
+    template<typename Char>
+    class BasicFormattedValue;
 
-        FormattedValue(Formatter* formatter, Conversion conv = NoConv, const FormatSpec& spec = FormatSpec::DEFAULT) :
+    typedef BasicFormattedValue<char> FormattedValue;
+    typedef BasicFormattedValue<char16_t> U16FormattedValue;
+    typedef BasicFormattedValue<char32_t> U32FormattedValue;
+    typedef BasicFormattedValue<wchar_t> WFormattedValue;
+
+    template<typename Char>
+    class BasicFormattedValue {
+    public:
+        typedef Char char_type;
+        typedef BasicFormattedValue<Char> self_type;
+        typedef BasicFormatSpec<Char> spec_type;
+
+        template<typename T>
+        BasicFormattedValue(const T& value, Conversion conv, const spec_type& spec) :
+            m_formatter(make_formatter<Char>(value)), m_conv(conv), m_spec(spec) {}
+
+        BasicFormattedValue(BasicFormatter<Char>* formatter, Conversion conv = NoConv, const spec_type& spec = spec_type::DEFAULT) :
             m_formatter(formatter), m_conv(conv), m_spec(spec) {}
 
-        FormattedValue(FormattedValue&& other) :
+        BasicFormattedValue(BasicFormattedValue<Char>&& other) :
             m_formatter(std::move(other.m_formatter)), m_conv(other.m_conv), m_spec(other.m_spec) {}
 
-        inline void format(std::ostream& out) const {
+        inline void format(std::basic_ostream<Char>& out) const {
             m_formatter->format(out, m_conv, m_spec);
         }
 
-        inline operator std::string () const {
-            std::stringstream out;
+        inline operator std::basic_string<Char> () const {
+            std::basic_ostringstream<Char> out;
             format(out);
             return out.str();
         }
 
-        inline FormattedValue& align(FormatSpec::Alignment alignment) {
+        inline self_type& align(typename spec_type::Alignment alignment) {
             m_spec.alignment = alignment;
             return *this;
         }
 
-        inline FormattedValue& left() {
-            m_spec.alignment = FormatSpec::Left;
+        inline self_type& left() {
+            m_spec.alignment = spec_type::Left;
             return *this;
         }
 
-        inline FormattedValue& right() {
-            m_spec.alignment = FormatSpec::Right;
+        inline self_type& right() {
+            m_spec.alignment = spec_type::Right;
             return *this;
         }
 
-        inline FormattedValue& afterSign() {
-            m_spec.alignment = FormatSpec::AfterSign;
+        inline self_type& afterSign() {
+            m_spec.alignment = spec_type::AfterSign;
             return *this;
         }
 
-        inline FormattedValue& center() {
-            m_spec.alignment = FormatSpec::Center;
+        inline self_type& center() {
+            m_spec.alignment = spec_type::Center;
             return *this;
         }
 
-        inline FormattedValue& type(FormatSpec::Type type) {
+        inline self_type& type(typename spec_type::Type type) {
             m_spec.type = type;
             return *this;
         }
 
-        inline FormattedValue& bin() {
-            m_spec.type = FormatSpec::Bin;
+        inline self_type& bin() {
+            m_spec.type = spec_type::Bin;
             return *this;
         }
 
-        inline FormattedValue& character() {
-            m_spec.type = FormatSpec::Character;
+        inline self_type& character() {
+            m_spec.type = spec_type::Character;
             return *this;
         }
 
-        inline FormattedValue& dec() {
-            m_spec.type = FormatSpec::Dec;
+        inline self_type& dec() {
+            m_spec.type = spec_type::Dec;
             return *this;
         }
 
-        inline FormattedValue& oct() {
-            m_spec.type = FormatSpec::Oct;
+        inline self_type& oct() {
+            m_spec.type = spec_type::Oct;
             return *this;
         }
 
-        inline FormattedValue& hex() {
-            m_spec.type = FormatSpec::Hex;
+        inline self_type& hex() {
+            m_spec.type = spec_type::Hex;
             return *this;
         }
 
-        inline FormattedValue& exp() {
-            m_spec.type = FormatSpec::Exp;
+        inline self_type& exp() {
+            m_spec.type = spec_type::Exp;
             return *this;
         }
 
-        inline FormattedValue& fixed() {
-            m_spec.type = FormatSpec::Fixed;
+        inline self_type& fixed() {
+            m_spec.type = spec_type::Fixed;
             return *this;
         }
 
-        inline FormattedValue& general() {
-            m_spec.type = FormatSpec::General;
+        inline self_type& general() {
+            m_spec.type = spec_type::General;
             return *this;
         }
 
-        inline FormattedValue& precentage() {
-            m_spec.type = FormatSpec::Percentage;
+        inline self_type& precentage() {
+            m_spec.type = spec_type::Percentage;
             return *this;
         }
 
-        inline FormattedValue& str() {
-            m_spec.type = FormatSpec::String;
+        inline self_type& str() {
+            m_spec.type = spec_type::String;
             return *this;
         }
 
-        inline FormattedValue& sign(FormatSpec::Sign sign) {
+        inline self_type& sign(typename spec_type::Sign sign) {
             m_spec.sign = sign;
             return *this;
         }
 
-        inline FormattedValue& fill(char fill, std::size_t width) {
+        inline self_type& fill(char fill, int width) {
             m_spec.fill  = fill;
             m_spec.width = width;
             return *this;
         }
 
-        inline FormattedValue& fill(char fill) {
+        inline self_type& fill(char fill) {
             m_spec.fill = fill;
             return *this;
         }
 
-        inline FormattedValue& width(std::size_t width) {
+        inline self_type& width(int width) {
             m_spec.width = width;
             return *this;
         }
 
-        inline FormattedValue& alt(bool alternate = true) {
+        inline self_type& alt(bool alternate = true) {
             m_spec.alternate = alternate;
             return *this;
         }
 
-        inline FormattedValue& upper() {
+        inline self_type& upper() {
             m_spec.upperCase = true;
             return *this;
         }
 
-        inline FormattedValue& lower() {
+        inline self_type& lower() {
             m_spec.upperCase = false;
             return *this;
         }
 
-        inline FormattedValue& thoudsandsSeperator(bool thoudsandsSeperator = true) {
+        inline self_type& thoudsandsSeperator(bool thoudsandsSeperator = true) {
             m_spec.thoudsandsSeperator = thoudsandsSeperator;
             return *this;
         }
 
-        inline FormattedValue& spec(const FormatSpec& spec) {
+        inline self_type& spec(const spec_type& spec) {
             m_spec = spec;
             return *this;
         }
 
-        inline FormattedValue& spec(const std::string& spec) {
-            m_spec = FormatSpec(spec);
+        inline self_type& spec(const std::basic_string<Char>& spec) {
+            m_spec = spec;
             return *this;
         }
 
-        inline FormattedValue& spec(const char* spec) {
-            m_spec = FormatSpec(spec);
+        inline self_type& spec(const Char* spec) {
+            m_spec = spec;
             return *this;
         }
 
-        inline const FormatSpec& spec() const {
+        inline const spec_type& spec() const {
             return m_spec;
         }
 
-        inline FormattedValue& conversion(Conversion conv) {
+        inline self_type& conversion(Conversion conv) {
             m_conv = conv;
             return *this;
         }
 
-        inline FormattedValue& repr() {
+        inline self_type& repr() {
             m_conv = ReprConv;
             return *this;
         }
@@ -185,123 +198,197 @@ namespace formatstring {
             return m_conv;
         }
 
-        inline std::string string() const {
-            return (std::string)*this;
+        inline std::basic_string<Char> string() const {
+            return (std::basic_string<Char>)*this;
         }
 
     private:
-        std::unique_ptr<Formatter> m_formatter;
-        Conversion m_conv;
-        FormatSpec m_spec;
+        std::unique_ptr< BasicFormatter<Char> > m_formatter;
+        Conversion                              m_conv;
+        BasicFormatSpec<Char>                   m_spec;
     };
 
-    template<typename T>
-    inline FormattedValue val(const T& value) {
-        return FormattedValue(value,NoConv,FormatSpec::DEFAULT);
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value) {
+        return BasicFormattedValue<Char>(value,NoConv,BasicFormatSpec<Char>::DEFAULT);
     }
 
-    template<typename Iter>
-    inline FormattedValue slice(Iter begin, Iter end) {
-        return new SliceFormatter<Iter>(begin, end);
+    template<typename T> inline FormattedValue    val(   const T& value) { return val<char,T>(value); }
+    template<typename T> inline U16FormattedValue u16val(const T& value) { return val<char16_t,T>(value); }
+    template<typename T> inline U32FormattedValue u32val(const T& value) { return val<char32_t,T>(value); }
+    template<typename T> inline WFormattedValue   wval(  const T& value) { return val<wchar_t,T>(value); }
+
+    template<typename Char>
+    inline BasicFormattedValue<Char> val(const Char str[]) {
+        return BasicFormattedValue<Char>(str,NoConv,BasicFormatSpec<Char>::DEFAULT);
     }
 
-    inline FormattedValue val(const char str[]) {
-        return FormattedValue(str,NoConv,FormatSpec::DEFAULT);
-    }
+//    inline U16FormattedValue u16val(const char16_t str[]) { return val<char16_t>(str); }
+//    inline U32FormattedValue u32val(const char32_t str[]) { return val<char32_t>(str); }
+//    inline WFormattedValue   wval(  const wchar_t  str[]) { return val<wchar_t>(str); }
 
-    template<typename T>
-    inline FormattedValue val(const T& value, const char* spec) {
-        FormattedValue fmt = val(value);
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value, const Char* spec) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.spec(spec);
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue val(const T& value, const std::string& spec) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline U16FormattedValue u16val(const T& value, const char16_t* spec) { return val<char16_t,T>(value,spec); }
+    template<typename T> inline U32FormattedValue u32val(const T& value, const char32_t* spec) { return val<char32_t,T>(value,spec); }
+    template<typename T> inline WFormattedValue   wval(  const T& value, const wchar_t*  spec) { return val<wchar_t,T>(value,spec); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value, const std::basic_string<Char>& spec) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.spec(spec);
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue val(const T& value, const FormatSpec& spec) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline U16FormattedValue u16val(const T& value, const std::u16string& spec) { return val<char16_t,T>(value, spec); }
+    template<typename T> inline U32FormattedValue u32val(const T& value, const std::u32string& spec) { return val<char32_t,T>(value, spec); }
+    template<typename T> inline WFormattedValue   wval(  const T& value, const std::wstring&   spec) { return val<wchar_t,T>(value, spec); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value, const BasicFormatSpec<Char>& spec) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.spec(spec);
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue val(const T& value, FormatSpec::Alignment alignment) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline U16FormattedValue u16val(const T& value, const U16FormatSpec& spec) { return val<char16_t,T>(value, spec); }
+    template<typename T> inline U32FormattedValue u32val(const T& value, const U32FormatSpec& spec) { return val<char32_t,T>(value, spec); }
+    template<typename T> inline WFormattedValue   wval(  const T& value, const WFormatSpec&   spec) { return val<wchar_t,T>(value, spec); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value, typename BasicFormatSpec<Char>::Alignment alignment) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.align(alignment);
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue val(const T& value, FormatSpec::Type type) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline U16FormattedValue u16val(const T& value, U16FormatSpec::Alignment alignment) { return val<char16_t,T>(value, alignment); }
+    template<typename T> inline U32FormattedValue u32val(const T& value, U32FormatSpec::Alignment alignment) { return val<char32_t,T>(value, alignment); }
+    template<typename T> inline WFormattedValue   wval(  const T& value, WFormatSpec::Alignment   alignment) { return val<wchar_t,T>(value, alignment); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value, typename BasicFormatSpec<Char>::Type type) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.type(type);
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue val(const T& value, FormatSpec::Sign sign) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline U16FormattedValue wval(const T& value, U16FormatSpec::Type type) { return val<char16_t,T>(value, type); }
+    template<typename T> inline U32FormattedValue wval(const T& value, U32FormatSpec::Type type) { return val<char32_t,T>(value, type); }
+    template<typename T> inline WFormattedValue   wval(const T& value, WFormatSpec::Type   type) { return val<wchar_t,T>(value, type); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value, typename BasicFormatSpec<Char>::Sign sign) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.sign(sign);
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue val(const T& value, char fill, std::size_t width) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline U16FormattedValue u16val(const T& value, U16FormatSpec::Sign sign) { return val<char16_t,T>(value, sign); }
+    template<typename T> inline U32FormattedValue u32val(const T& value, U32FormatSpec::Sign sign) { return val<char32_t,T>(value, sign); }
+    template<typename T> inline WFormattedValue   wval(  const T& value, WFormatSpec::Sign   sign) { return val<wchar_t,T>(value, sign); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> val(const T& value, Char fill, int width) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.fill(fill, width);
         return fmt;
     }
 
-    template<typename NumberType>
-    inline FormattedValue bin(NumberType value) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline U16FormattedValue u16val(const T& value, char16_t fill, int width) { return val<char16_t,T>(value, fill, width); }
+    template<typename T> inline U32FormattedValue u32val(const T& value, char32_t fill, int width) { return val<char32_t,T>(value, fill, width); }
+    template<typename T> inline WFormattedValue   wval(  const T& value, wchar_t  fill, int width) { return val<wchar_t,T>(value, fill, width); }
+
+    template<typename Char,typename Iter>
+    inline BasicFormattedValue<Char> slice(Iter begin, Iter end) {
+        return new SliceFormatter<Char,Iter>(begin, end);
+    }
+
+    template<typename Iter> inline FormattedValue    slice(  Iter begin, Iter end) { return slice<char,Iter>(begin, end); }
+    template<typename Iter> inline U16FormattedValue u16slice(Iter begin, Iter end) { return slice<char16_t,Iter>(begin, end); }
+    template<typename Iter> inline U32FormattedValue u32slice(Iter begin, Iter end) { return slice<char32_t,Iter>(begin, end); }
+    template<typename Iter> inline WFormattedValue   wslice(  Iter begin, Iter end) { return slice<wchar_t,Iter>(begin, end); }
+
+
+    template<typename Char,typename NumberType>
+    inline BasicFormattedValue<Char> bin(NumberType value) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.bin();
         return fmt;
     }
 
-    template<typename NumberType>
-    inline FormattedValue dec(NumberType value) {
-        FormattedValue fmt = val(value);
+    template<typename NumberType> inline FormattedValue    bin(   NumberType value) { return bin<char,NumberType>(value); }
+    template<typename NumberType> inline U16FormattedValue u16bin(NumberType value) { return bin<char16_t,NumberType>(value); }
+    template<typename NumberType> inline U32FormattedValue u32bin(NumberType value) { return bin<char32_t,NumberType>(value); }
+    template<typename NumberType> inline WFormattedValue   wbin(  NumberType value) { return bin<wchar_t,NumberType>(value); }
+
+    template<typename Char,typename NumberType>
+    inline BasicFormattedValue<Char> dec(NumberType value) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.dec();
         return fmt;
     }
 
-    template<typename NumberType>
-    inline FormattedValue oct(NumberType value) {
-        FormattedValue fmt = val(value);
+    template<typename NumberType> inline FormattedValue    dec(   NumberType value) { return dec<char,NumberType>(value); }
+    template<typename NumberType> inline U16FormattedValue u16dec(NumberType value) { return dec<char16_t,NumberType>(value); }
+    template<typename NumberType> inline U32FormattedValue u32dec(NumberType value) { return dec<char32_t,NumberType>(value); }
+    template<typename NumberType> inline WFormattedValue   wdec(  NumberType value) { return dec<wchar_t,NumberType>(value); }
+
+    template<typename Char,typename NumberType>
+    inline BasicFormattedValue<Char> oct(NumberType value) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.oct();
         return fmt;
     }
 
-    template<typename NumberType>
-    inline FormattedValue hex(NumberType value) {
-        FormattedValue fmt = val(value);
+    template<typename NumberType> inline FormattedValue    oct(   NumberType value) { return oct<char,NumberType>(value); }
+    template<typename NumberType> inline U16FormattedValue u16oct(NumberType value) { return oct<char16_t,NumberType>(value); }
+    template<typename NumberType> inline U32FormattedValue u32oct(NumberType value) { return oct<char32_t,NumberType>(value); }
+    template<typename NumberType> inline WFormattedValue   woct(  NumberType value) { return oct<wchar_t,NumberType>(value); }
+
+    template<typename Char,typename NumberType>
+    inline BasicFormattedValue<Char> hex(NumberType value) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.hex();
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue str(T value) {
-        FormattedValue fmt = val(value);
+    template<typename NumberType> inline FormattedValue    hex(   NumberType value) { return hex<char,NumberType>(value); }
+    template<typename NumberType> inline U16FormattedValue u16hex(NumberType value) { return hex<char16_t,NumberType>(value); }
+    template<typename NumberType> inline U32FormattedValue u32hex(NumberType value) { return hex<char32_t,NumberType>(value); }
+    template<typename NumberType> inline WFormattedValue   whex(  NumberType value) { return hex<wchar_t,NumberType>(value); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> str(const T& value) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.str();
         return fmt;
     }
 
-    template<typename T>
-    inline FormattedValue repr(const T& value) {
-        FormattedValue fmt = val(value);
+    template<typename T> inline FormattedValue    str(   const T& value) { return str<char,T>(value); }
+    template<typename T> inline U16FormattedValue u16str(const T& value) { return str<char16_t,T>(value); }
+    template<typename T> inline U32FormattedValue u32str(const T& value) { return str<char32_t,T>(value); }
+    template<typename T> inline WFormattedValue   wstr(  const T& value) { return str<wchar_t,T>(value); }
+
+    template<typename Char,typename T>
+    inline BasicFormattedValue<Char> repr(const T& value) {
+        BasicFormattedValue<Char> fmt = val(value);
         fmt.repr();
         return fmt;
     }
 
-    template<typename OStream>
-    OStream& operator << (OStream& out, const FormattedValue& value) {
+    template<typename T> inline FormattedValue    repr(   const T& value) { return repr<char,T>(value); }
+    template<typename T> inline U16FormattedValue u16repr(const T& value) { return repr<char16_t,T>(value); }
+    template<typename T> inline U32FormattedValue u32repr(const T& value) { return repr<char32_t,T>(value); }
+    template<typename T> inline WFormattedValue   wrepr(  const T& value) { return repr<wchar_t,T>(value); }
+
+    template<typename Char,typename OStream>
+    OStream& operator << (OStream& out, const BasicFormattedValue<Char>& value) {
         value.format(out);
         return out;
     }

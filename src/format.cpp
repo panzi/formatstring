@@ -172,7 +172,9 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
 
     /*
     case 'n':
+    case 'N':
         optionsptr->type = Spec::LocaleAwareNumber;
+        spec->upperCase = type == 'N';
         ++ ptr;
         break;
     */
@@ -185,7 +187,9 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
         break;
 
     case 's':
+    case 'S':
         spec->type = Spec::String;
+        spec->upperCase = type == 'S';
         ++ ptr;
         break;
 
