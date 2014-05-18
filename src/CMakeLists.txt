@@ -1,5 +1,6 @@
 add_library(formatstring
 	format.cpp
+	formatspec.cpp
 	formatvalue.cpp
 	exceptions.cpp
 	
