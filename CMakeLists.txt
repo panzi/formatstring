@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(formatstring)
 
+set(FORMATSTRING_MAJOR_VERSION 1)
+set(FORMATSTRING_MINOR_VERSION 0)
+set(FORMATSTRING_PATCH_VERSION 0)
+
 option(WITH_EXAMPLES "Build examples." OFF)
 
 if(MSVC)

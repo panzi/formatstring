@@ -2,6 +2,7 @@
 #define FORMATSTRING_FORMATTEDVALUE_H
 #pragma once
 
+#include "formatstring/config.h"
 #include "formatstring/export.h"
 #include "formatstring/format.h"
 #include "formatstring/formatter.h"

@@ -1,8 +1,22 @@
 #ifndef FORMATSTRING_CONFIG_H_IN
 #define FORMATSTRING_CONFIG_H_IN
+#pragma once
+
+#define FORMATSTRING_MAJOR_VERSION @FORMATSTRING_MAJOR_VERSION@
+#define FORMATSTRING_MINOR_VERSION @FORMATSTRING_MINOR_VERSION@
+#define FORMATSTRING_PATCH_VERSION @FORMATSTRING_PATCH_VERSION@
+
+#cmakedefine FORMATSTRING_CHAR16_SUPPORT
+#cmakedefine FORMATSTRING_CHAR32_SUPPORT
+
+#include "formatstring/export.h"
 
 namespace formatstring {
-
+    namespace version {
+        FORMATSTRING_EXPORT extern const int major;
+        FORMATSTRING_EXPORT extern const int minor;
+        FORMATSTRING_EXPORT extern const int patch;
+    }
 }
 
 #endif // FORMATSTRING_CONFIG_H_IN

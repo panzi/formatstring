@@ -4,6 +4,7 @@ configure_file(../include/formatstring/config.h.in "${CMAKE_CURRENT_BINARY_DIR}/
 
 add_compiler_export_flags()
 add_library(formatstring SHARED
+	config.cpp
 	format.cpp
 	formatspec.cpp
 	formattedvalue.cpp

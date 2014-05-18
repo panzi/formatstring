@@ -2,6 +2,7 @@
 #define FORMATSTRING_FORMAT_TRAITS_H
 #pragma once
 
+#include "formatstring/config.h"
 #include "formatstring/formatter.h"
 
 namespace formatstring {

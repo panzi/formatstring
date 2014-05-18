@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "formatstring/config.h"
 #include "formatstring/formatvalue.h"
 #include "formatstring/conversion.h"
 #include "formatstring/formatspec.h"

@@ -12,6 +12,7 @@
 #include <sstream>
 #include <cmath>
 
+#include "formatstring/config.h"
 #include "formatstring/export.h"
 #include "formatstring/formatspec.h"
 

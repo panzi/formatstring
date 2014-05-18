@@ -2,6 +2,7 @@
 #define FORMATSTRING_FORMATSPEC_H
 #pragma once
 
+#include "formatstring/config.h"
 #include "formatstring/export.h"
 
 #include <cstdint>

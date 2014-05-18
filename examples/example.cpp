@@ -129,5 +129,7 @@ int main() {
     Format emptyfmt = dbgfmt;
     std::cout << debug("debug: {:_^20}\n", "foo bar") << dbgfmt(12, 'A') << emptyfmt(12, 'A');
 
+    std::cout << "formatstring library version: " << formatstring::version::major << '.' << formatstring::version::minor << '.' << formatstring::version::patch << '\n';
+
     return 0;
 }
