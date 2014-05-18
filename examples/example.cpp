@@ -110,8 +110,8 @@ int main() {
     std::unordered_map<std::string,int> ys = {{"A",12},{"B",23},{"C",34}};
     std::cout << format("{} {}\n", xs, ys);
 
-    std::cout << format(  " string {} {:_^10} {} {}\n", 12,  'A', arr,  "bla");
-    std::wcout << format(L"wstring {} {:_^10} {} {}\n", 12, L'A', arr, L"bla");
+    std::cout << format(  " string {} {:_^10} {} {} {1!r} {3!r}\n", 12,  'A', arr,  "bla");
+    std::wcout << format(L"wstring {} {:_^10} {} {} {1!r} {3!r}\n", 12, L'A', arr, L"bla");
 
     std::cout << format(".{:_^20}.\n", 'A');
 

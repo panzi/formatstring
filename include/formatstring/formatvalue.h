@@ -464,8 +464,39 @@ namespace formatstring {
         }
     }
 
+    namespace impl {
+        template<typename Char>
+        struct repr_char {
+            static inline void write_prefix(std::basic_ostream<Char>& out) {
+                (void)out;
+            }
+        };
+
+        template<>
+        struct repr_char<wchar_t> {
+            static inline void write_prefix(std::wostream& out) {
+                out.put('L');
+            }
+        };
+
+        template<>
+        struct repr_char<char16_t> {
+            static inline void write_prefix(std::basic_ostream<char16_t>& out) {
+                out.put('u');
+            }
+        };
+
+        template<>
+        struct repr_char<char32_t> {
+            static inline void write_prefix(std::basic_ostream<char32_t>& out) {
+                out.put('U');
+            }
+        };
+    }
+
     template<typename Char>
     void repr_char(std::basic_ostream<Char>& out, Char value) {
+        impl::repr_char<Char>::write_prefix(out);
         out.put('\'');
         switch (value) {
         case '\0': out.put('\\'); out.put('0'); break;
@@ -485,6 +516,7 @@ namespace formatstring {
 
     template<typename Char>
     void repr_string(std::basic_ostream<Char>& out, const Char* value) {
+        impl::repr_char<Char>::write_prefix(out);
         out.put('"');
         for (; *value; ++ value) {
             Char ch = *value;
