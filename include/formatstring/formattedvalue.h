@@ -2,6 +2,7 @@
 #define FORMATSTRING_FORMATTEDVALUE_H
 #pragma once
 
+#include "formatstring/format.h"
 #include "formatstring/formatter.h"
 #include "formatstring/formatspec.h"
 #include "formatstring/formatvalue.h"
@@ -161,7 +162,7 @@ namespace formatstring {
             return *this;
         }
 
-        inline self_type& thoudsandsSeperator(bool thoudsandsSeperator = true) {
+        inline self_type& tdssep(bool thoudsandsSeperator = true) {
             m_spec.thoudsandsSeperator = thoudsandsSeperator;
             return *this;
         }

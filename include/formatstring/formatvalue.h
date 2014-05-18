@@ -11,7 +11,6 @@
 #include <string>
 #include <sstream>
 #include <cmath>
-#include <cstring>
 
 #include "formatstring/formatspec.h"
 

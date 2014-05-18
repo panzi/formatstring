@@ -110,8 +110,8 @@ int main() {
     std::unordered_map<std::string,int> ys = {{"A",12},{"B",23},{"C",34}};
     std::cout << format("{} {}\n", xs, ys);
 
-    std::cout << format(  " string {} {:_^10} {} {} {1!r} {3!r}\n", 12,  'A', arr,  "bla");
-    std::wcout << format(L"wstring {} {:_^10} {} {} {1!r} {3!r}\n", 12, L'A', arr, L"bla");
+    std::cout << format(  " string {} {:_^10} {} {} {1!r} {3!r}\n", 12,  'A', arr,  "bla") << std::flush;
+    std::wcout << format(L"wstring {} {:_^10} {} {} {1!r} {3!r}\n", 12, L'A', arr, L"bla") << std::flush;
 
     std::cout << format(".{:_^20}.\n", 'A');
 
@@ -120,6 +120,10 @@ int main() {
 
     void *vptr = intarr;
     std::cout << format(".{:_^20}.\n", vptr);
+
+    auto dbgfmt = debug_compile("debug: {} {!r}\n");
+    Format emptyfmt = dbgfmt;
+    std::cout << debug("debug: {:_^20}\n", "foo bar") << dbgfmt(12, 'A') << emptyfmt(12, 'A');
 
     return 0;
 }

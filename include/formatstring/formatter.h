@@ -36,14 +36,8 @@ namespace formatstring {
     template<typename Char, typename First, typename... Rest>
     inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const First& first, const Rest&... rest);
 
-    template<typename Char, typename... Rest>
-    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char first[], const Rest&... rest);
-
     template<typename Char, typename Last>
     inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const Last& last);
-
-    template<typename Char>
-    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char last[]);
 
     template<typename Char, typename T,
              void _format(std::basic_ostream<Char>& out, T value, const BasicFormatSpec<Char>& spec) = format_value,

@@ -119,6 +119,12 @@ namespace formatstring {
         return bind(args...);
     }
 
+    template<typename Char, typename OStream>
+    inline OStream& operator << (OStream& out, const BasicBoundFormat<Char>& fmt) {
+        fmt.write_into(out);
+        return out;
+    }
+
     template<typename Char, typename... Args>
     inline BasicBoundFormat<Char> format(const std::basic_string<Char>& fmt, const Args&... args) {
         return BasicBoundFormat<Char>(fmt, args...);
@@ -127,12 +133,6 @@ namespace formatstring {
     template<typename Char, typename... Args>
     inline BasicBoundFormat<Char> format(const Char* fmt, const Args&... args) {
         return BasicBoundFormat<Char>(fmt, args...);
-    }
-
-    template<typename Char, typename OStream>
-    OStream& operator << (OStream& out, const BasicBoundFormat<Char>& fmt) {
-        fmt.write_into(out);
-        return out;
     }
 
     template<typename Char>
@@ -144,6 +144,127 @@ namespace formatstring {
     inline BasicFormat<Char> compile(const Char* fmt) {
         return fmt;
     }
+
+    // ---- debug ----
+    template<typename Char>
+    class DummyBoundFormat;
+
+    template<typename Char>
+    class DummyFormat {
+    public:
+        typedef Char char_type;
+
+        inline DummyFormat() {}
+        inline DummyFormat(const Char* fmt) { (void)fmt; }
+        inline DummyFormat(const std::basic_string<Char>& fmt) { (void)fmt; }
+
+        template<typename... Args>
+        inline void format(std::basic_ostream<Char>& out, const Args&...) const {
+            (void)out;
+        }
+
+        template<typename... Args>
+        inline DummyBoundFormat<Char> bind(const Args&...) const {
+            return DummyBoundFormat<Char>();
+        }
+
+        template<typename... Args>
+        inline DummyBoundFormat<Char> operator () (const Args&...) const {
+            return DummyBoundFormat<Char>();
+        }
+
+        inline void apply(std::basic_ostream<Char>& out, const typename BasicFormatter<Char>::List& formatters) const {
+            (void)out;
+            (void)formatters;
+        }
+
+        inline operator BasicFormat<Char> () const {
+            const Char fmt[] = {(Char)0};
+            return BasicFormat<Char>(fmt);
+        }
+    };
+
+    template<typename Char>
+    class DummyBoundFormat {
+    public:
+        typedef Char char_type;
+
+        inline DummyBoundFormat() {}
+
+        template<typename... Args>
+        inline DummyBoundFormat(const BasicFormat<Char>& format, const Args&...) {
+            (void)format;
+        }
+
+        template<typename... Args>
+        inline DummyBoundFormat(BasicFormat<Char>&& format, const Args&...) {
+            (void)format;
+        }
+
+        inline void write_into(std::basic_ostream<Char>& out) const {
+            (void)out;
+        }
+
+        inline operator std::basic_string<Char> () const {
+            return std::basic_string<Char>();
+        }
+
+        inline std::basic_string<Char> str() const {
+            return std::basic_string<Char>();
+        }
+    };
+
+    template<typename Char, typename OStream>
+    inline OStream& operator << (OStream& out, const DummyBoundFormat<Char>& fmt) {
+        (void)fmt;
+        return out;
+    }
+
+#ifdef NDEBUG
+    template<typename Char, typename... Args>
+    inline DummyBoundFormat<Char> debug(const std::basic_string<Char>& fmt, const Args&...) {
+        (void)fmt;
+        return DummyBoundFormat<Char>();
+    }
+
+    template<typename Char, typename... Args>
+    inline DummyBoundFormat<Char> debug(const Char* fmt, const Args&...) {
+        (void)fmt;
+        return DummyBoundFormat<Char>();
+    }
+
+    template<typename Char>
+    inline DummyFormat<Char> debug_compile(const std::basic_string<Char>& fmt) {
+        (void)fmt;
+        return DummyFormat<Char>();
+    }
+
+    template<typename Char>
+    inline DummyFormat<Char> debug_compile(const Char* fmt) {
+        (void)fmt;
+        return DummyFormat<Char>();
+    }
+#else
+    template<typename Char, typename... Args>
+    inline BasicBoundFormat<Char> debug(const std::basic_string<Char>& fmt, const Args&... args) {
+        return BasicBoundFormat<Char>(fmt, args...);
+    }
+
+    template<typename Char, typename... Args>
+    inline BasicBoundFormat<Char> debug(const Char* fmt, const Args&... args) {
+        return BasicBoundFormat<Char>(fmt, args...);
+    }
+
+    template<typename Char>
+    inline BasicFormat<Char> debug_compile(const std::basic_string<Char>& fmt) {
+        return fmt;
+    }
+
+    template<typename Char>
+    inline BasicFormat<Char> debug_compile(const Char* fmt) {
+        return fmt;
+    }
+#endif
 }
 
 #endif // FORMATSTRING_FORMAT_H
