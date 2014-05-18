@@ -520,7 +520,7 @@ namespace formatstring {
             format_integer<Char,unsigned int>(out, value ? 1 : 0, spec);
         }
         else {
-            const Char *str = spec.upperCase ?
+            const Char* str = spec.upperCase ?
                         (value ? impl::basic_names<Char>::TRUE_UPPER : impl::basic_names<Char>::FALSE_UPPER) :
                         (value ? impl::basic_names<Char>::TRUE_LOWER : impl::basic_names<Char>::FALSE_LOWER);
             BasicFormatSpec<Char> strspec = spec;
@@ -528,6 +528,10 @@ namespace formatstring {
             format_string(out, str, strspec);
         }
     }
+
+    inline void format_value(std::basic_ostream<char16_t>& out, char16_t value, const U16FormatSpec& spec) { format_char(out, value, spec); }
+    inline void format_value(std::basic_ostream<char32_t>& out, char32_t value, const U32FormatSpec& spec) { format_char(out, value, spec); }
+    inline void format_value(std::wostream& out, wchar_t value, const WFormatSpec& spec) { format_char(out, value, spec); }
 
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, Char value, const BasicFormatSpec<Char>& spec) { format_char(out, value, spec); }
 
@@ -551,7 +555,10 @@ namespace formatstring {
 
     // --- repr_value impl ----
 
-    template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, bool value) { out << (value ? impl::basic_names<Char>::TRUE_LOWER : impl::basic_names<Char>::FALSE_LOWER); }
+    template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, bool value) {
+        const Char* str = value ? impl::basic_names<Char>::TRUE_LOWER : impl::basic_names<Char>::FALSE_LOWER;
+        out.write(str, std::char_traits<Char>::length(str));
+    }
 
     inline void repr_value(std::basic_ostream<char16_t>& out, char16_t value) { repr_char(out, value); }
     inline void repr_value(std::basic_ostream<char32_t>& out, char32_t value) { repr_char(out, value); }
@@ -657,8 +664,10 @@ namespace formatstring {
 
     template<typename Char, typename T>
     void format_value_fallback(std::basic_ostream<Char>& out, const T& value, const BasicFormatSpec<Char>& spec) {
-        (void)spec;
-        out << value;
+        std::basic_ostringstream<Char> buffer;
+        buffer << value;
+        std::cerr << "format_value_fallback!\n";
+        format_value(out, buffer.str(), spec);
     }
 
     // --- repr_value for complex types ----

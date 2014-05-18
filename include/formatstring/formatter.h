@@ -166,7 +166,13 @@ namespace formatstring {
         const iterator_type end;
     };
 
+    // ---- make_formatter ----
+
     template<typename Char> inline ValueFormatter<Char,bool>* make_formatter(bool value) { return new ValueFormatter<Char,bool>(value); }
+
+    inline ValueFormatter<char16_t,char16_t>* make_formatter(char16_t value) { return new ValueFormatter<char16_t,char16_t>(value); }
+    inline ValueFormatter<char32_t,char32_t>* make_formatter(char32_t value) { return new ValueFormatter<char32_t,char32_t>(value); }
+    inline ValueFormatter<wchar_t,wchar_t>*   make_formatter(wchar_t  value) { return new ValueFormatter<wchar_t,wchar_t>(value); }
 
     template<typename Char> inline ValueFormatter<Char,char>*      make_formatter(char      value) { return new ValueFormatter<Char,char>(value); }
     template<typename Char> inline ValueFormatter<Char,short>*     make_formatter(short     value) { return new ValueFormatter<Char,short>(value); }
@@ -242,6 +248,8 @@ namespace formatstring {
     inline SliceFormatter<Char,typename std::unordered_map<K,V>::const_iterator,'{','}',format_map,repr_map>* make_formatter(const std::unordered_map<K,V>& value) {
         return new SliceFormatter<Char,typename std::unordered_map<K,V>::const_iterator,'{','}',format_map,repr_map>(value.begin(), value.end());
     }
+
+    // ---- unpack_formatters ----
 
     template<typename Char, typename First, typename... Rest>
     inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const First& first, const Rest&... rest) {
