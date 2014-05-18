@@ -6,6 +6,8 @@
 #include <iostream>
 #include <locale>
 #include <tuple>
+#include <type_traits>
+#include <string>
 #include <sstream>
 #include <cmath>
 #include <cstring>
@@ -95,29 +97,14 @@ namespace formatstring {
         template<typename Char>
         struct group_thousands : public std::numpunct<Char> {
             std::string do_grouping() const { return "\03"; }
-            char do_thousands_sep() const { return ','; }
-            char do_decimal_point() const { return '.'; }
+            Char do_thousands_sep() const { return ','; }
+            Char do_decimal_point() const { return '.'; }
         };
 
         template<typename Char>
         struct no_grouping : public group_thousands<Char> {
             std::string do_grouping() const { return ""; }
         };
-
-        template<typename Int>
-        struct make_unsigned;
-
-        template<> struct make_unsigned<char>      { typedef unsigned char      type; };
-        template<> struct make_unsigned<short>     { typedef unsigned short     type; };
-        template<> struct make_unsigned<int>       { typedef unsigned int       type; };
-        template<> struct make_unsigned<long>      { typedef unsigned long      type; };
-        template<> struct make_unsigned<long long> { typedef unsigned long long type; };
-
-        template<> struct make_unsigned<unsigned char>      { typedef unsigned char      type; };
-        template<> struct make_unsigned<unsigned short>     { typedef unsigned short     type; };
-        template<> struct make_unsigned<unsigned int>       { typedef unsigned int       type; };
-        template<> struct make_unsigned<unsigned long>      { typedef unsigned long      type; };
-        template<> struct make_unsigned<unsigned long long> { typedef unsigned long long type; };
 
         template<typename Char>
         struct basic_names {
@@ -141,7 +128,7 @@ namespace formatstring {
         }
     }
 
-    template<typename Char, typename Int, typename UInt = typename impl::make_unsigned<Int>::type>
+    template<typename Char, typename Int, typename UInt = typename std::make_unsigned<Int>::type>
     void format_integer(std::basic_ostream<Char>& out, Int value, const BasicFormatSpec<Char>& spec);
 
     template<typename Char, typename Float>
@@ -150,19 +137,19 @@ namespace formatstring {
     template<typename Char>
     void format_string(std::basic_ostream<Char>& out, const Char value[], const BasicFormatSpec<Char>& spec);
 
-    template<typename Char, typename Int, typename UInt = typename impl::make_unsigned<Int>::type>
+    template<typename Char, typename Int, typename UInt = typename std::make_unsigned<Int>::type>
     void format_integer(std::basic_ostream<Char>& out, Int value, const BasicFormatSpec<Char>& spec) {
         typedef BasicFormatSpec<Char> Spec;
 
         if (spec.type == Spec::Character) {
             Char str[2] = {(Char)value, 0};
-            FormatSpec strspec = spec;
+            Spec strspec = spec;
             strspec.type = Spec::String;
             format_string(out, str, strspec);
             return;
         }
         else if (spec.isDecimalType()) {
-            format_float<char,double>(out, value, spec);
+            format_float<Char,double>(out, value, spec);
             return;
         }
 
@@ -365,8 +352,8 @@ namespace formatstring {
             break;
         }
 
-        std::string num = buffer.str();
-        typename std::string::size_type length = prefix.size() + num.size();
+        std::basic_string<Char> num = buffer.str();
+        typename std::basic_string<Char>::size_type length = prefix.size() + num.size();
 
         if (length < spec.width) {
             std::size_t padding = spec.width - length;
@@ -432,7 +419,7 @@ namespace formatstring {
             throw std::invalid_argument("Invalid format specifier for string or character");
         }
 
-        std::size_t length = std::strlen(value);
+        std::size_t length = std::char_traits<Char>::length(value);
         if (spec.width > 0 && length < (std::size_t)spec.width) {
             std::size_t padding = spec.width - length;
             switch (spec.alignment) {
@@ -530,10 +517,10 @@ namespace formatstring {
     template<typename Char>
     void format_value(std::basic_ostream<Char>& out, bool value, const BasicFormatSpec<Char>& spec) {
         if (spec.isNumberType()) {
-            format_integer<char,unsigned int>(out, value ? 1 : 0, spec);
+            format_integer<Char,unsigned int>(out, value ? 1 : 0, spec);
         }
         else {
-            const char *str = spec.upperCase ?
+            const Char *str = spec.upperCase ?
                         (value ? impl::basic_names<Char>::TRUE_UPPER : impl::basic_names<Char>::FALSE_UPPER) :
                         (value ? impl::basic_names<Char>::TRUE_LOWER : impl::basic_names<Char>::FALSE_LOWER);
             BasicFormatSpec<Char> strspec = spec;

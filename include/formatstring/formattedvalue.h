@@ -12,10 +12,10 @@ namespace formatstring {
     template<typename Char>
     class BasicFormattedValue;
 
-    typedef BasicFormattedValue<char> FormattedValue;
+    typedef BasicFormattedValue<char>    FormattedValue;
     typedef BasicFormattedValue<char16_t> U16FormattedValue;
     typedef BasicFormattedValue<char32_t> U32FormattedValue;
-    typedef BasicFormattedValue<wchar_t> WFormattedValue;
+    typedef BasicFormattedValue<wchar_t>  WFormattedValue;
 
     template<typename Char>
     class BasicFormattedValue {
