@@ -13,12 +13,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "formatstring/format.h"
 #include "formatstring/formatvalue.h"
 #include "formatstring/conversion.h"
 #include "formatstring/formatspec.h"
 
 namespace formatstring {
+
+    template<typename Char>
+    class BasicFormat;
 
     template<typename Char>
     class BasicFormatter {

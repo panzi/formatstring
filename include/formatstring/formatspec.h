@@ -11,13 +11,27 @@ namespace formatstring {
     struct BasicFormatSpec;
 
     typedef BasicFormatSpec<char> FormatSpec;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     typedef BasicFormatSpec<char16_t> U16FormatSpec;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     typedef BasicFormatSpec<char32_t> U32FormatSpec;
+#endif
+
     typedef BasicFormatSpec<wchar_t> WFormatSpec;
 
     void parse_spec(const char* str, FormatSpec* spec);
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     void parse_spec(const char16_t* str, U16FormatSpec* spec);
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     void parse_spec(const char32_t* str, U32FormatSpec* spec);
+#endif
+
     void parse_spec(const wchar_t* str, WFormatSpec* spec);
 
     template<typename Char>
@@ -185,6 +199,17 @@ namespace formatstring {
     inline bool operator!=(const BasicFormatSpec<Char>& lhs, const BasicFormatSpec<Char>& rhs) {
         return !lhs.equals(rhs);
     }
+
+    extern template class BasicFormatSpec<char>;
+    extern template class BasicFormatSpec<wchar_t>;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    extern template class BasicFormatSpec<char16_t>;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    extern template class BasicFormatSpec<char32_t>;
+#endif
 }
 
 #endif // FORMATSTRING_FORMATSPEC_H

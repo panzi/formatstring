@@ -14,9 +14,16 @@ namespace formatstring {
     template<typename Char>
     class BasicFormattedValue;
 
-    typedef BasicFormattedValue<char>    FormattedValue;
+    typedef BasicFormattedValue<char>     FormattedValue;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     typedef BasicFormattedValue<char16_t> U16FormattedValue;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     typedef BasicFormattedValue<char32_t> U32FormattedValue;
+#endif
+
     typedef BasicFormattedValue<wchar_t>  WFormattedValue;
 
     template<typename Char>
@@ -210,14 +217,33 @@ namespace formatstring {
         BasicFormatSpec<Char>                   m_spec;
     };
 
+    extern template class BasicFormattedValue<char>;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    extern template class BasicFormattedValue<char16_t>;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    extern template class BasicFormattedValue<char32_t>;
+#endif
+
+    extern template class BasicFormattedValue<wchar_t>;
+
     template<typename Char,typename T>
     inline BasicFormattedValue<Char> val(const T& value) {
         return BasicFormattedValue<Char>(value,NoConv,BasicFormatSpec<Char>::DEFAULT);
     }
 
     template<typename T> inline FormattedValue    val(   const T& value) { return val<char,T>(value); }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16val(const T& value) { return val<char16_t,T>(value); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32val(const T& value) { return val<char32_t,T>(value); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(  const T& value) { return val<wchar_t,T>(value); }
 
     template<typename Char>
@@ -225,9 +251,15 @@ namespace formatstring {
         return BasicFormattedValue<Char>(str,NoConv,BasicFormatSpec<Char>::DEFAULT);
     }
 
-//    inline U16FormattedValue u16val(const char16_t str[]) { return val<char16_t>(str); }
-//    inline U32FormattedValue u32val(const char32_t str[]) { return val<char32_t>(str); }
-//    inline WFormattedValue   wval(  const wchar_t  str[]) { return val<wchar_t>(str); }
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    inline U16FormattedValue u16val(const char16_t str[]) { return val<char16_t>(str); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    inline U32FormattedValue u32val(const char32_t str[]) { return val<char32_t>(str); }
+#endif
+
+    inline WFormattedValue   wval(  const wchar_t  str[]) { return val<wchar_t>(str); }
 
     template<typename Char,typename T>
     inline BasicFormattedValue<Char> val(const T& value, const Char* spec) {
@@ -236,8 +268,14 @@ namespace formatstring {
         return fmt;
     }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16val(const T& value, const char16_t* spec) { return val<char16_t,T>(value,spec); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32val(const T& value, const char32_t* spec) { return val<char32_t,T>(value,spec); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(  const T& value, const wchar_t*  spec) { return val<wchar_t,T>(value,spec); }
 
     template<typename Char,typename T>
@@ -247,8 +285,14 @@ namespace formatstring {
         return fmt;
     }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16val(const T& value, const std::u16string& spec) { return val<char16_t,T>(value, spec); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32val(const T& value, const std::u32string& spec) { return val<char32_t,T>(value, spec); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(  const T& value, const std::wstring&   spec) { return val<wchar_t,T>(value, spec); }
 
     template<typename Char,typename T>
@@ -258,8 +302,14 @@ namespace formatstring {
         return fmt;
     }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16val(const T& value, const U16FormatSpec& spec) { return val<char16_t,T>(value, spec); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32val(const T& value, const U32FormatSpec& spec) { return val<char32_t,T>(value, spec); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(  const T& value, const WFormatSpec&   spec) { return val<wchar_t,T>(value, spec); }
 
     template<typename Char,typename T>
@@ -269,8 +319,14 @@ namespace formatstring {
         return fmt;
     }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16val(const T& value, U16FormatSpec::Alignment alignment) { return val<char16_t,T>(value, alignment); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32val(const T& value, U32FormatSpec::Alignment alignment) { return val<char32_t,T>(value, alignment); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(  const T& value, WFormatSpec::Alignment   alignment) { return val<wchar_t,T>(value, alignment); }
 
     template<typename Char,typename T>
@@ -280,8 +336,14 @@ namespace formatstring {
         return fmt;
     }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue wval(const T& value, U16FormatSpec::Type type) { return val<char16_t,T>(value, type); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue wval(const T& value, U32FormatSpec::Type type) { return val<char32_t,T>(value, type); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(const T& value, WFormatSpec::Type   type) { return val<wchar_t,T>(value, type); }
 
     template<typename Char,typename T>
@@ -291,8 +353,14 @@ namespace formatstring {
         return fmt;
     }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16val(const T& value, U16FormatSpec::Sign sign) { return val<char16_t,T>(value, sign); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32val(const T& value, U32FormatSpec::Sign sign) { return val<char32_t,T>(value, sign); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(  const T& value, WFormatSpec::Sign   sign) { return val<wchar_t,T>(value, sign); }
 
     template<typename Char,typename T>
@@ -302,8 +370,14 @@ namespace formatstring {
         return fmt;
     }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16val(const T& value, char16_t fill, int width) { return val<char16_t,T>(value, fill, width); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32val(const T& value, char32_t fill, int width) { return val<char32_t,T>(value, fill, width); }
+#endif
+
     template<typename T> inline WFormattedValue   wval(  const T& value, wchar_t  fill, int width) { return val<wchar_t,T>(value, fill, width); }
 
     template<typename Char,typename Iter>
@@ -312,10 +386,16 @@ namespace formatstring {
     }
 
     template<typename Iter> inline FormattedValue    slice(  Iter begin, Iter end) { return slice<char,Iter>(begin, end); }
-    template<typename Iter> inline U16FormattedValue u16slice(Iter begin, Iter end) { return slice<char16_t,Iter>(begin, end); }
-    template<typename Iter> inline U32FormattedValue u32slice(Iter begin, Iter end) { return slice<char32_t,Iter>(begin, end); }
-    template<typename Iter> inline WFormattedValue   wslice(  Iter begin, Iter end) { return slice<wchar_t,Iter>(begin, end); }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    template<typename Iter> inline U16FormattedValue u16slice(Iter begin, Iter end) { return slice<char16_t,Iter>(begin, end); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    template<typename Iter> inline U32FormattedValue u32slice(Iter begin, Iter end) { return slice<char32_t,Iter>(begin, end); }
+#endif
+
+    template<typename Iter> inline WFormattedValue   wslice(  Iter begin, Iter end) { return slice<wchar_t,Iter>(begin, end); }
 
     template<typename Char,typename NumberType>
     inline BasicFormattedValue<Char> bin(NumberType value) {
@@ -325,8 +405,15 @@ namespace formatstring {
     }
 
     template<typename NumberType> inline FormattedValue    bin(   NumberType value) { return bin<char,NumberType>(value); }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename NumberType> inline U16FormattedValue u16bin(NumberType value) { return bin<char16_t,NumberType>(value); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename NumberType> inline U32FormattedValue u32bin(NumberType value) { return bin<char32_t,NumberType>(value); }
+#endif
+
     template<typename NumberType> inline WFormattedValue   wbin(  NumberType value) { return bin<wchar_t,NumberType>(value); }
 
     template<typename Char,typename NumberType>
@@ -337,8 +424,15 @@ namespace formatstring {
     }
 
     template<typename NumberType> inline FormattedValue    dec(   NumberType value) { return dec<char,NumberType>(value); }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename NumberType> inline U16FormattedValue u16dec(NumberType value) { return dec<char16_t,NumberType>(value); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename NumberType> inline U32FormattedValue u32dec(NumberType value) { return dec<char32_t,NumberType>(value); }
+#endif
+
     template<typename NumberType> inline WFormattedValue   wdec(  NumberType value) { return dec<wchar_t,NumberType>(value); }
 
     template<typename Char,typename NumberType>
@@ -349,8 +443,15 @@ namespace formatstring {
     }
 
     template<typename NumberType> inline FormattedValue    oct(   NumberType value) { return oct<char,NumberType>(value); }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename NumberType> inline U16FormattedValue u16oct(NumberType value) { return oct<char16_t,NumberType>(value); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename NumberType> inline U32FormattedValue u32oct(NumberType value) { return oct<char32_t,NumberType>(value); }
+#endif
+
     template<typename NumberType> inline WFormattedValue   woct(  NumberType value) { return oct<wchar_t,NumberType>(value); }
 
     template<typename Char,typename NumberType>
@@ -361,8 +462,15 @@ namespace formatstring {
     }
 
     template<typename NumberType> inline FormattedValue    hex(   NumberType value) { return hex<char,NumberType>(value); }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename NumberType> inline U16FormattedValue u16hex(NumberType value) { return hex<char16_t,NumberType>(value); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename NumberType> inline U32FormattedValue u32hex(NumberType value) { return hex<char32_t,NumberType>(value); }
+#endif
+
     template<typename NumberType> inline WFormattedValue   whex(  NumberType value) { return hex<wchar_t,NumberType>(value); }
 
     template<typename Char,typename T>
@@ -373,8 +481,15 @@ namespace formatstring {
     }
 
     template<typename T> inline FormattedValue    str(   const T& value) { return str<char,T>(value); }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16str(const T& value) { return str<char16_t,T>(value); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32str(const T& value) { return str<char32_t,T>(value); }
+#endif
+
     template<typename T> inline WFormattedValue   wstr(  const T& value) { return str<wchar_t,T>(value); }
 
     template<typename Char,typename T>
@@ -385,8 +500,15 @@ namespace formatstring {
     }
 
     template<typename T> inline FormattedValue    repr(   const T& value) { return repr<char,T>(value); }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<typename T> inline U16FormattedValue u16repr(const T& value) { return repr<char16_t,T>(value); }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<typename T> inline U32FormattedValue u32repr(const T& value) { return repr<char32_t,T>(value); }
+#endif
+
     template<typename T> inline WFormattedValue   wrepr(  const T& value) { return repr<wchar_t,T>(value); }
 
     template<typename Char,typename OStream>

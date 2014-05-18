@@ -31,6 +31,7 @@ namespace formatstring {
         }
     };
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     template<>
     struct format_traits<char16_t, char16_t> {
         typedef char16_t char_type;
@@ -40,7 +41,10 @@ namespace formatstring {
             return new ValueFormatter<char16_t,char16_t,format_char,repr_char>(value);
         }
     };
+#endif
 
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     template<>
     struct format_traits<char32_t, char32_t> {
         typedef char32_t char_type;
@@ -50,6 +54,7 @@ namespace formatstring {
             return new ValueFormatter<char32_t,char32_t,format_char,repr_char>(value);
         }
     };
+#endif
 
     template<>
     struct format_traits<wchar_t, wchar_t> {

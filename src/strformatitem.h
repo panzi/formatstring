@@ -24,7 +24,20 @@ namespace formatstring {
     };
 
     typedef BasicStrFormatItem<char> StrFormatItem;
+    typedef BasicStrFormatItem<wchar_t> WStrFormatItem;
 
+    extern template class BasicStrFormatItem<char>;
+    extern template class BasicStrFormatItem<wchar_t>;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    typedef BasicStrFormatItem<char16_t> U16StrFormatItem;
+    extern template class BasicStrFormatItem<char16_t>;
+#endif
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    typedef BasicStrFormatItem<char16_t> U32StrFormatItem;
+    extern template class BasicStrFormatItem<char32_t>;
+#endif
 }
 
 #endif // FORMATSTRING_STRFORMATITEM_H

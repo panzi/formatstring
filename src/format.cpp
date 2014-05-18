@@ -341,13 +341,17 @@ void formatstring::parse_format(const char* fmt, BasicFormatItem<char>::List *it
     parse_format_internal(fmt, items);
 }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
 void formatstring::parse_format(const char16_t* fmt, BasicFormatItem<char16_t>::List *items) {
     parse_format_internal(fmt, items);
 }
+#endif
 
+#ifdef FORMATSTRING_CHAR32_SUPPORT
 void formatstring::parse_format(const char32_t* fmt, BasicFormatItem<char32_t>::List *items) {
     parse_format_internal(fmt, items);
 }
+#endif
 
 void formatstring::parse_format(const wchar_t* fmt, BasicFormatItem<wchar_t>::List *items) {
     parse_format_internal(fmt, items);
@@ -365,14 +369,34 @@ void formatstring::parse_spec(const char* str, FormatSpec* spec) {
     parse_spec_templ(str, spec);
 }
 
+#ifdef FORMATSTRING_CHAR16_SUPPORT
 void formatstring::parse_spec(const char16_t* str, U16FormatSpec* spec) {
     parse_spec_templ(str, spec);
 }
+#endif
 
+#ifdef FORMATSTRING_CHAR32_SUPPORT
 void formatstring::parse_spec(const char32_t* str, U32FormatSpec* spec) {
     parse_spec_templ(str, spec);
 }
+#endif
 
 void formatstring::parse_spec(const wchar_t* str, WFormatSpec* spec) {
     parse_spec_templ(str, spec);
 }
+
+template class BasicFormat<char>;
+template class BasicBoundFormat<char>;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+template class BasicFormat<char16_t>;
+template class BasicBoundFormat<char16_t>;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+template class BasicFormat<char32_t>;
+template class BasicBoundFormat<char32_t>;
+#endif
+
+template class BasicFormat<wchar_t>;
+template class BasicBoundFormat<wchar_t>;

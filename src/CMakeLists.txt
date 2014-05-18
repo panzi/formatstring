@@ -4,6 +4,8 @@ add_library(formatstring
 	formattedvalue.cpp
 	formatvalue.cpp
 	exceptions.cpp
+	strformatitem.cpp
+	valueformatitem.cpp
 	
 	strformatitem.h
 	valueformatitem.h

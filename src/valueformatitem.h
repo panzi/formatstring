@@ -32,7 +32,21 @@ namespace formatstring {
         BasicFormatSpec<Char> m_spec;
     };
 
-    typedef BasicValueFormatItem<char> ValueFormatItem;
+    typedef BasicValueFormatItem<char>    ValueFormatItem;
+    typedef BasicValueFormatItem<wchar_t> WValueFormatItem;
+
+    extern template class BasicValueFormatItem<char>;
+    extern template class BasicValueFormatItem<wchar_t>;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    typedef BasicValueFormatItem<char16_t> U16ValueFormatItem;
+    extern template class BasicValueFormatItem<char16_t>;
+#endif
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    typedef BasicValueFormatItem<char16_t> U32ValueFormatItem;
+    extern template class BasicValueFormatItem<char32_t>;
+#endif
 }
 
 #endif // FORMATSTRING_VALUEFORMATITEM_H

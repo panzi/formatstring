@@ -5,8 +5,13 @@
 #include "formatstring/formatter.h"
 
 #include <iosfwd>
+#include <vector>
+#include <memory>
 
 namespace formatstring {
+
+    template<typename Char>
+    class BasicFormatter;
 
     template<typename Char>
     class BasicFormatItem {

@@ -15,8 +15,15 @@ namespace formatstring {
     class BasicFormat;
 
     typedef BasicFormat<char> Format;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     typedef BasicFormat<char16_t> U16Format;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     typedef BasicFormat<char32_t> U32Format;
+#endif
+
     typedef BasicFormat<wchar_t> WFormat;
 
     template<typename Char>
@@ -25,8 +32,15 @@ namespace formatstring {
     typedef BasicBoundFormat<char> BoundFormat;
 
     void parse_format(const char* fmt, BasicFormatItem<char>::List *items);
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
     void parse_format(const char16_t* fmt, BasicFormatItem<char16_t>::List *items);
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
     void parse_format(const char32_t* fmt, BasicFormatItem<char32_t>::List *items);
+#endif
+
     void parse_format(const wchar_t* fmt, BasicFormatItem<wchar_t>::List *items);
 
     template<typename Char>
@@ -265,6 +279,22 @@ namespace formatstring {
         return fmt;
     }
 #endif
+
+    extern template class BasicFormat<char>;
+    extern template class BasicBoundFormat<char>;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    extern template class BasicFormat<char16_t>;
+    extern template class BasicBoundFormat<char16_t>;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    extern template class BasicFormat<char32_t>;
+    extern template class BasicBoundFormat<char32_t>;
+#endif
+
+    extern template class BasicFormat<wchar_t>;
+    extern template class BasicBoundFormat<wchar_t>;
 }
 
 #endif // FORMATSTRING_FORMAT_H

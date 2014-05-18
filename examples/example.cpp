@@ -4,6 +4,8 @@
 #include <tuple>
 #include <cmath>
 
+#include <fstream>
+
 #include "formatstring.h"
 
 using namespace formatstring;
