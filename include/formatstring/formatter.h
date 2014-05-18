@@ -89,32 +89,32 @@ namespace formatstring {
         typedef T value_type;
         typedef Ptr ptr_type;
 
-        PtrFormatter(ptr_type value) : value(value) {}
+        PtrFormatter(ptr_type ptr) : ptr(ptr) {}
 
         virtual void format(std::basic_ostream<Char>& out, Conversion conv, const BasicFormatSpec<Char>& spec) const {
             switch (conv) {
             case ReprConv:
             {
                 std::basic_ostringstream<Char> buffer;
-                _repr(buffer, *value);
+                _repr(buffer, *ptr);
                 format_value(out, buffer.str(), spec);
                 break;
             }
             case StrConv:
             {
                 std::basic_ostringstream<Char> buffer;
-                _format(buffer, *value, BasicFormatSpec<Char>::DEFAULT);
+                _format(buffer, *ptr, BasicFormatSpec<Char>::DEFAULT);
                 format_value(out, buffer.str(), spec);
                 break;
             }
             default:
-                _format(out, *value, spec);
+                _format(out, *ptr, spec);
                 break;
             }
         }
 
     private:
-        ptr_type value;
+        ptr_type ptr;
     };
 
     template<typename Char,typename T>
@@ -128,7 +128,7 @@ namespace formatstring {
         FallbackFormatter(ptr_type ptr) : super_type(ptr) {}
     };
 
-    template<typename Char,typename Iter, Char left = '[', Char right = ']',
+    template<typename Char, typename Iter, Char left = '[', Char right = ']',
              void _format(std::basic_ostream<Char>& out, Iter begin, Iter end, const BasicFormatSpec<Char>& spec, Char left, Char right) = format_slice,
              void _repr(std::basic_ostream<Char>& out, Iter begin, Iter end, Char left, Char right) = repr_slice>
     class SliceFormatter : public BasicFormatter<Char> {
@@ -166,111 +166,369 @@ namespace formatstring {
         const iterator_type end;
     };
 
-    // ---- make_formatter ----
+    // ==== format_traits ====
 
-    template<typename Char> inline ValueFormatter<Char,bool>* make_formatter(bool value) { return new ValueFormatter<Char,bool>(value); }
+    // ---- fallback ----
+    template<typename Char, typename T>
+    struct format_traits;
 
-    inline ValueFormatter<char16_t,char16_t>* make_formatter(char16_t value) { return new ValueFormatter<char16_t,char16_t>(value); }
-    inline ValueFormatter<char32_t,char32_t>* make_formatter(char32_t value) { return new ValueFormatter<char32_t,char32_t>(value); }
-    inline ValueFormatter<wchar_t,wchar_t>*   make_formatter(wchar_t  value) { return new ValueFormatter<wchar_t,wchar_t>(value); }
+    template<typename Char, typename T>
+    struct format_traits {
+        typedef Char char_type;
+        typedef T value_type;
 
-    template<typename Char> inline ValueFormatter<Char,char>*      make_formatter(char      value) { return new ValueFormatter<Char,char>(value); }
-    template<typename Char> inline ValueFormatter<Char,short>*     make_formatter(short     value) { return new ValueFormatter<Char,short>(value); }
-    template<typename Char> inline ValueFormatter<Char,int>*       make_formatter(int       value) { return new ValueFormatter<Char,int>(value); }
-    template<typename Char> inline ValueFormatter<Char,long>*      make_formatter(long      value) { return new ValueFormatter<Char,long>(value); }
-    template<typename Char> inline ValueFormatter<Char,long long>* make_formatter(long long value) { return new ValueFormatter<Char,long long>(value); }
+        static inline FallbackFormatter<Char,T>* make_formatter(const T& value) {
+            return new FallbackFormatter<Char,T>(&value);
+        }
+    };
 
-    template<typename Char> inline ValueFormatter<Char,unsigned char>*      make_formatter(unsigned char      value) { return new ValueFormatter<Char,unsigned char>(value); }
-    template<typename Char> inline ValueFormatter<Char,unsigned short>*     make_formatter(unsigned short     value) { return new ValueFormatter<Char,unsigned short>(value); }
-    template<typename Char> inline ValueFormatter<Char,unsigned int>*       make_formatter(unsigned int       value) { return new ValueFormatter<Char,unsigned int>(value); }
-    template<typename Char> inline ValueFormatter<Char,unsigned long>*      make_formatter(unsigned long      value) { return new ValueFormatter<Char,unsigned long>(value); }
-    template<typename Char> inline ValueFormatter<Char,unsigned long long>* make_formatter(unsigned long long value) { return new ValueFormatter<Char,unsigned long long>(value); }
+    // ---- special characters ----
+    template<typename Char>
+    struct format_traits<Char, bool> {
+        typedef Char char_type;
+        typedef bool value_type;
 
-    template<typename Char> inline ValueFormatter<Char,float>*  make_formatter(float  value) { return new ValueFormatter<Char,float>(value); }
-    template<typename Char> inline ValueFormatter<Char,double>* make_formatter(double value) { return new ValueFormatter<Char,double>(value); }
+        static inline ValueFormatter<Char,bool>* make_formatter(bool value) {
+            return new ValueFormatter<Char,bool>(value);
+        }
+    };
+
+    template<>
+    struct format_traits<char16_t, char16_t> {
+        typedef char16_t char_type;
+        typedef char16_t value_type;
+
+        static inline ValueFormatter<char16_t,char16_t,format_char,repr_char>* make_formatter(char16_t value) {
+            return new ValueFormatter<char16_t,char16_t,format_char,repr_char>(value);
+        }
+    };
+
+    template<>
+    struct format_traits<char32_t, char32_t> {
+        typedef char32_t char_type;
+        typedef char32_t value_type;
+
+        static inline ValueFormatter<char32_t,char32_t,format_char,repr_char>* make_formatter(char32_t value) {
+            return new ValueFormatter<char32_t,char32_t,format_char,repr_char>(value);
+        }
+    };
+
+    template<>
+    struct format_traits<wchar_t, wchar_t> {
+        typedef wchar_t char_type;
+        typedef wchar_t value_type;
+
+        static inline ValueFormatter<wchar_t,wchar_t,format_char,repr_char>* make_formatter(wchar_t value) {
+            return new ValueFormatter<wchar_t,wchar_t,format_char,repr_char>(value);
+        }
+    };
+
+    // ---- integers ----
+    template<typename Char>
+    struct format_traits<Char, char> {
+        typedef Char char_type;
+        typedef char value_type;
+
+        static inline ValueFormatter<Char,char,format_char,repr_char>* make_formatter(char value) {
+            return new ValueFormatter<Char,char,format_char,repr_char>(value);
+        }
+    };
 
     template<typename Char>
-    inline ValueFormatter<Char,const Char*>* make_formatter(const Char value[]) {
-        return new ValueFormatter<Char,const Char*>(value);
-    }
+    struct format_traits<Char, short> {
+        typedef Char char_type;
+        typedef short value_type;
+
+        static inline ValueFormatter<Char,short,format_integer>* make_formatter(short value) {
+            return new ValueFormatter<Char,short,format_integer>(value);
+        }
+    };
 
     template<typename Char>
-    inline PtrFormatter< Char,std::basic_string<Char> >* make_formatter(const std::basic_string<Char>& value) {
-        return new PtrFormatter< Char,std::basic_string<Char> >(&value);
-    }
+    struct format_traits<Char, int> {
+        typedef Char char_type;
+        typedef int value_type;
 
-    template<typename Char,typename T>
-    inline FallbackFormatter<Char,T>* make_formatter(const T& value) {
-        return new FallbackFormatter<Char,T>(&value);
-    }
+        static inline ValueFormatter<Char,int,format_integer>* make_formatter(int value) {
+            return new ValueFormatter<Char,int,format_integer>(value);
+        }
+    };
 
-    template<typename Char,typename T>
-    inline SliceFormatter<Char,typename std::vector<T>::const_iterator>* make_formatter(const std::vector<T>& value) {
-        return new SliceFormatter<Char,typename std::vector<T>::const_iterator>(value.begin(), value.end());
-    }
+    template<typename Char>
+    struct format_traits<Char, long> {
+        typedef Char char_type;
+        typedef long value_type;
 
-    template<typename Char,typename T>
-    inline SliceFormatter<Char,typename std::list<T>::const_iterator>* make_formatter(const std::list<T>& value) {
-        return new SliceFormatter<Char,typename std::list<T>::const_iterator>(value.begin(), value.end());
-    }
+        static inline ValueFormatter<Char,long,format_integer>* make_formatter(long value) {
+            return new ValueFormatter<Char,long,format_integer>(value);
+        }
+    };
 
-    template<typename Char,typename T,std::size_t N>
-    inline SliceFormatter<Char,typename std::array<T,N>::const_iterator>* make_formatter(const std::array<T,N>& value) {
-        return new SliceFormatter<Char,typename std::array<T,N>::const_iterator>(value.begin(), value.end());
-    }
+    template<typename Char>
+    struct format_traits<Char, long long> {
+        typedef Char char_type;
+        typedef long long value_type;
 
-    template<typename Char,typename T>
-    inline SliceFormatter<Char,typename std::set<T>::const_iterator,'{','}'>* make_formatter(const std::set<T>& value) {
-        return new SliceFormatter<Char,typename std::set<T>::const_iterator,'{','}'>(value.begin(), value.end());
-    }
+        static inline ValueFormatter<Char,long long,format_integer>* make_formatter(long long value) {
+            return new ValueFormatter<Char,long long,format_integer>(value);
+        }
+    };
 
-    template<typename Char,typename T>
-    inline SliceFormatter<Char,typename std::unordered_set<T>::const_iterator,'{','}'>* make_formatter(const std::unordered_set<T>& value) {
-        return new SliceFormatter<Char,typename std::unordered_set<T>::const_iterator,'{','}'>(value.begin(), value.end());
-    }
+    // ---- unsigned integers ----
+    template<typename Char>
+    struct format_traits<Char, unsigned char> {
+        typedef Char char_type;
+        typedef unsigned char value_type;
+
+        static inline ValueFormatter<Char,unsigned char,format_integer>* make_formatter(unsigned char value) {
+            return new ValueFormatter<Char,unsigned char,format_integer>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, unsigned short> {
+        typedef Char char_type;
+        typedef unsigned short value_type;
+
+        static inline ValueFormatter<Char,unsigned short,format_integer>* make_formatter(unsigned short value) {
+            return new ValueFormatter<Char,unsigned short,format_integer>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, unsigned int> {
+        typedef Char char_type;
+        typedef unsigned int value_type;
+
+        static inline ValueFormatter<Char,unsigned int,format_integer>* make_formatter(unsigned int value) {
+            return new ValueFormatter<Char,unsigned int,format_integer>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, unsigned long> {
+        typedef Char char_type;
+        typedef unsigned long value_type;
+
+        static inline ValueFormatter<Char,unsigned long,format_integer>* make_formatter(unsigned long value) {
+            return new ValueFormatter<Char,unsigned long,format_integer>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, unsigned long long> {
+        typedef Char char_type;
+        typedef unsigned long long value_type;
+
+        static inline ValueFormatter<Char,unsigned long long,format_integer>* make_formatter(unsigned long long value) {
+            return new ValueFormatter<Char,unsigned long long,format_integer>(value);
+        }
+    };
+
+    // ---- floating point ----
+    template<typename Char>
+    struct format_traits<Char, float> {
+        typedef Char char_type;
+        typedef float value_type;
+
+        static inline ValueFormatter<Char,float,format_float>* make_formatter(float value) {
+            return new ValueFormatter<Char,float,format_float>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, double> {
+        typedef Char char_type;
+        typedef double value_type;
+
+        static inline ValueFormatter<Char,double,format_float>* make_formatter(double value) {
+            return new ValueFormatter<Char,double,format_float>(value);
+        }
+    };
+
+    // ---- string ----
+    template<typename Char>
+    struct format_traits<Char, const Char[]> {
+        typedef Char char_type;
+        typedef const Char value_type[];
+
+        static inline ValueFormatter<Char,const Char*>* make_formatter(const Char value[]) {
+            return new ValueFormatter<Char,const Char*>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, Char[]> {
+        typedef Char char_type;
+        typedef Char value_type[];
+
+        static inline ValueFormatter<Char,const Char*>* make_formatter(const Char value[]) {
+            return new ValueFormatter<Char,const Char*>(value);
+        }
+    };
+
+    template<typename Char, std::size_t N>
+    struct format_traits<Char, const Char[N]> {
+        typedef Char char_type;
+        typedef const Char value_type[N];
+
+        static inline ValueFormatter<Char,const Char*>* make_formatter(const Char value[]) {
+            return new ValueFormatter<Char,const Char*>(value);
+        }
+    };
+
+    template<typename Char, std::size_t N>
+    struct format_traits<Char, Char[N]> {
+        typedef Char char_type;
+        typedef Char value_type[N];
+
+        static inline ValueFormatter<Char,const Char*>* make_formatter(const Char value[]) {
+            return new ValueFormatter<Char,const Char*>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, const Char*> {
+        typedef Char char_type;
+        typedef const Char* value_type;
+
+        static inline ValueFormatter<Char,const Char*>* make_formatter(const Char* value) {
+            return new ValueFormatter<Char,const Char*>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits< Char, std::basic_string<Char> > {
+        typedef Char char_type;
+        typedef std::basic_string<Char> value_type;
+
+        static inline PtrFormatter<Char,value_type>* make_formatter(const value_type& value) {
+            return new PtrFormatter<Char,value_type>(&value);
+        }
+    };
+
+    // ---- array ----
+    template<typename Char, typename T, std::size_t N>
+    struct format_traits<Char, const T[N]> {
+        typedef Char char_type;
+        typedef const T value_type[N];
+
+        static inline SliceFormatter<Char,const T*>* make_formatter(const T value[]) {
+            return new SliceFormatter<Char,const T*>(value, value + N);
+        }
+    };
+
+    template<typename Char, typename T, std::size_t N>
+    struct format_traits<Char, T[N]> {
+        typedef Char char_type;
+        typedef T value_type[N];
+
+        static inline SliceFormatter<Char,const T*>* make_formatter(const T value[]) {
+            return new SliceFormatter<Char,const T*>(value, value + N);
+        }
+    };
+
+    // ---- standard containers ----
+    template<typename Char, typename T>
+    struct format_traits< Char, std::vector<T> > {
+        typedef Char char_type;
+        typedef std::vector<T> value_type;
+
+        static inline SliceFormatter<Char,typename value_type::const_iterator>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator>(value.begin(), value.end());
+        }
+    };
+
+    template<typename Char, typename T>
+    struct format_traits< Char, std::list<T> > {
+        typedef Char char_type;
+        typedef std::list<T> value_type;
+
+        static inline SliceFormatter<Char,typename value_type::const_iterator>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator>(value.begin(), value.end());
+        }
+    };
+
+    template<typename Char, typename T, std::size_t N>
+    struct format_traits< Char, std::array<T,N> > {
+        typedef Char char_type;
+        typedef std::array<T,N> value_type;
+
+        static inline SliceFormatter<Char,typename value_type::const_iterator>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator>(value.begin(), value.end());
+        }
+    };
+
+    template<typename Char, typename T>
+    struct format_traits< Char, std::set<T> > {
+        typedef Char char_type;
+        typedef std::set<T> value_type;
+
+        static inline SliceFormatter<Char,typename value_type::const_iterator,'{','}'>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator,'{','}'>(value.begin(), value.end());
+        }
+    };
+
+    template<typename Char, typename T>
+    struct format_traits< Char, std::unordered_set<T> > {
+        typedef Char char_type;
+        typedef std::unordered_set<T> value_type;
+
+        static inline SliceFormatter<Char,typename value_type::const_iterator,'{','}'>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator,'{','}'>(value.begin(), value.end());
+        }
+    };
 
     template<typename Char, typename... Args>
-    inline PtrFormatter< Char,std::tuple<Args...> >* make_formatter(const std::tuple<Args...>& value) {
-        return new PtrFormatter< Char,std::tuple<Args...> >(&value);
-    }
+    struct format_traits< Char, std::tuple<Args...> > {
+        typedef Char char_type;
+        typedef std::tuple<Args...> value_type;
 
-    template<typename Char,typename First, typename Second>
-    inline PtrFormatter< Char,std::pair<First,Second> >* make_formatter(const std::pair<First,Second>& value) {
-        return new PtrFormatter< Char,std::pair<First,Second> >(&value);
-    }
+        static inline PtrFormatter<Char,value_type>* make_formatter(const value_type& value) {
+            return new PtrFormatter<Char,value_type>(&value);
+        }
+    };
+
+    template<typename Char, typename First, typename Second>
+    struct format_traits< Char, std::pair<First,Second> > {
+        typedef Char char_type;
+        typedef std::pair<First,Second> value_type;
+
+        static inline PtrFormatter<Char,value_type>* make_formatter(const value_type& value) {
+            return new PtrFormatter<Char,value_type>(&value);
+        }
+    };
 
     template<typename Char, typename K, typename V>
-    inline SliceFormatter<Char,typename std::map<K,V>::const_iterator,'{','}',format_map,repr_map>* make_formatter(const std::map<K,V>& value) {
-        return new SliceFormatter<Char,typename std::map<K,V>::const_iterator,'{','}',format_map,repr_map>(value.begin(), value.end());
-    }
+    struct format_traits< Char, std::map<K,V> > {
+        typedef Char char_type;
+        typedef std::map<K,V> value_type;
+
+        static inline SliceFormatter<Char,typename value_type::const_iterator,'{','}',format_map,repr_map>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator,'{','}',format_map,repr_map>(value.begin(), value.end());
+        }
+    };
 
     template<typename Char, typename K, typename V>
-    inline SliceFormatter<Char,typename std::unordered_map<K,V>::const_iterator,'{','}',format_map,repr_map>* make_formatter(const std::unordered_map<K,V>& value) {
-        return new SliceFormatter<Char,typename std::unordered_map<K,V>::const_iterator,'{','}',format_map,repr_map>(value.begin(), value.end());
-    }
+    struct format_traits< Char, std::unordered_map<K,V> > {
+        typedef Char char_type;
+        typedef std::unordered_map<K,V> value_type;
 
-    // ---- unpack_formatters ----
+        static inline SliceFormatter<Char,typename value_type::const_iterator,'{','}',format_map,repr_map>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator,'{','}',format_map,repr_map>(value.begin(), value.end());
+        }
+    };
 
+    // ==== unpack_formatters ====
     template<typename Char, typename First, typename... Rest>
     inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const First& first, const Rest&... rest) {
-        formatters.emplace_back(make_formatter<Char>(first));
+        formatters.emplace_back(format_traits<Char,First>::make_formatter(first));
         unpack_formatters<Char, Rest...>(formatters, rest...);
-    }
-
-    template<typename Char, typename... Rest>
-    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char first[], const Rest&... rest) {
-        formatters.emplace_back(make_formatter(first));
-        unpack_formatters(formatters, rest...);
     }
 
     template<typename Char, typename Last>
     inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const Last& last) {
-        formatters.emplace_back(make_formatter<Char>(last));
-    }
-
-    template<typename Char>
-    inline void unpack_formatters(typename BasicFormatter<Char>::List& formatters, const char last[]) {
-        formatters.emplace_back(make_formatter(last));
+        formatters.emplace_back(format_traits<Char,Last>::make_formatter(last));
     }
 }
 

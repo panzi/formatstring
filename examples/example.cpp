@@ -51,9 +51,18 @@ private:
     const Example2* value;
 };
 
-template<typename Char>
-Example2Formatter<Char>* make_formatter(const Example2& value) {
-    return new Example2Formatter<Char>(&value);
+namespace formatstring {
+
+    template<typename Char>
+    struct format_traits<Char, Example2> {
+        typedef Char char_type;
+        typedef Example2 value_type;
+
+        static inline Example2Formatter<Char>* make_formatter(const Example2& value) {
+            return new Example2Formatter<Char>(&value);
+        }
+    };
+
 }
 
 int main() {
@@ -69,18 +78,22 @@ int main() {
 
     Format fmt = compile("{}-{:c}");
 
-    std::cout << fmt('A', 52) << ' ' << fmt(53, 'B') << '\n';
+    std::cout << fmt('A', 52) << ' ';
+    std::cout << fmt(53, 'B') << '\n';
     std::cout << format("bla {} {:_^20} {} {} {} {}\n", vec, arr,
                         std::tuple<std::string,int,bool>("foo\n\t\"\\", 12, false),
                         std::tuple<float>(0), std::tuple<>(), std::pair<int,std::string>(32,"bla"));
 
     std::string ch = repr('\n');
+
     Example1 ex1("foo bar");
     Example2 *ptr = new Example2("ptr");
     std::shared_ptr<Example2> ptr2(new Example2("shared"));
     std::cout << format("{:_<20} ", ex1) << repr(Example1("bla")) << '\n';
     std::cout << format("{}, {!r}, ptr: {!s}, *ptr: {}, shared_ptr: {}, *shared_ptr: {}\n",
                         Example2("blub"), Example2("bla\nbla"), ptr, *ptr, ptr2, *ptr2);
+    delete ptr;
+
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';
 
     std::cout << bin(1234567890).alt() << ' ' << oct(1234567890).alt() << ' ' << dec(1234567890).alt() << ' ' << hex(1234567890).alt() << '\n';
@@ -100,9 +113,13 @@ int main() {
     std::cout << format(  " string {} {:_^10} {} {}\n", 12,  'A', arr,  "bla");
     std::wcout << format(L"wstring {} {:_^10} {} {}\n", 12, L'A', arr, L"bla");
 
-    delete ptr;
-
     std::cout << format(".{:_^20}.\n", 'A');
+
+    int intarr[] = {1, 2, -3};
+    std::cout << format(".{:_^20}.\n", intarr);
+
+    void *vptr = intarr;
+    std::cout << format(".{:_^20}.\n", vptr);
 
     return 0;
 }

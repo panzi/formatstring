@@ -666,7 +666,6 @@ namespace formatstring {
     void format_value_fallback(std::basic_ostream<Char>& out, const T& value, const BasicFormatSpec<Char>& spec) {
         std::basic_ostringstream<Char> buffer;
         buffer << value;
-        std::cerr << "format_value_fallback!\n";
         format_value(out, buffer.str(), spec);
     }
 

@@ -26,7 +26,7 @@ namespace formatstring {
 
         template<typename T>
         BasicFormattedValue(const T& value, Conversion conv, const spec_type& spec) :
-            m_formatter(make_formatter<Char>(value)), m_conv(conv), m_spec(spec) {}
+            m_formatter(format_traits<Char,T>::make_formatter(value)), m_conv(conv), m_spec(spec) {}
 
         BasicFormattedValue(BasicFormatter<Char>* formatter, Conversion conv = NoConv, const spec_type& spec = spec_type::DEFAULT) :
             m_formatter(formatter), m_conv(conv), m_spec(spec) {}
