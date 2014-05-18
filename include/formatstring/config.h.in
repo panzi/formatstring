@@ -8,6 +8,7 @@
 
 #cmakedefine FORMATSTRING_CHAR16_SUPPORT
 #cmakedefine FORMATSTRING_CHAR32_SUPPORT
+#cmakedefine FORMATSTRING_HEXFLOAT_SUPPORT
 
 #include "formatstring/export.h"
 

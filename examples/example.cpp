@@ -131,5 +131,12 @@ int main() {
 
     std::cout << "formatstring library version: " << formatstring::version::major << '.' << formatstring::version::minor << '.' << formatstring::version::patch << '\n';
 
+    try {
+        std::cout << format("hex float: {:a} {0:020A}\n", 1234.5678);
+    }
+    catch (const std::runtime_error& exc) {
+        std::cerr << exc.what() << std::endl;
+    }
+
     return 0;
 }

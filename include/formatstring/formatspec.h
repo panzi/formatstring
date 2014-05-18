@@ -69,6 +69,7 @@ namespace formatstring {
             Fixed,
             General,
             Percentage,
+            HexFloat,
 
             String
 
@@ -147,6 +148,7 @@ namespace formatstring {
             case Fixed:
             case General:
             case Percentage:
+            case HexFloat:
                 return true;
 
             default:
@@ -168,12 +170,13 @@ namespace formatstring {
             }
         }
 
-        inline bool isDecimalType() const {
+        inline bool isFloatType() const {
             switch (type) {
             case Exp:
             case Fixed:
             case General:
             case Percentage:
+            case HexFloat:
                 return true;
 
             default:

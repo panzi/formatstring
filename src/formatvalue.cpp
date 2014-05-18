@@ -1,7 +1,5 @@
 #include "formatstring/formatvalue.h"
 
-using namespace formatstring;
-
 namespace formatstring {
     namespace impl {
         template<typename Char>
@@ -96,6 +94,8 @@ namespace formatstring {
 #endif
     }
 }
+
+using namespace formatstring;
 
 template<> const char* const impl::names::TRUE_LOWER  = "true";
 template<> const char* const impl::names::TRUE_UPPER  = "TRUE";
@@ -216,7 +216,7 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
         format_string(out, str, strspec);
         return;
     }
-    else if (spec.isDecimalType()) {
+    else if (spec.isFloatType()) {
         format_float<Char,double>(out, value, spec);
         return;
     }
@@ -345,7 +345,7 @@ template<typename Char, typename Float>
 void formatstring::format_float(std::basic_ostream<Char>& out, Float value, const BasicFormatSpec<Char>& spec) {
     typedef BasicFormatSpec<Char> Spec;
 
-    if (!spec.isDecimalType() && spec.type != Spec::Generic) {
+    if (!spec.isFloatType() && spec.type != Spec::Generic) {
         throw std::invalid_argument("Cannot use floating point numbers with non-decimal format specifier.");
     }
 
@@ -413,6 +413,16 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
         buffer << (abs * 100);
         buffer.put('%');
         break;
+
+    case Spec::HexFloat:
+#ifdef FORMATSTRING_HEXFLOAT_SUPPORT
+        buffer.setf(std::ios::hexfloat, std::ios::floatfield);
+        buffer.precision(spec.precision);
+        buffer << abs;
+        break;
+#else
+        throw std::runtime_error("STL implementation does not support std::ios::hexfloat.");
+#endif
 
     default:
         break;

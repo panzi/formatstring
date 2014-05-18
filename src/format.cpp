@@ -123,6 +123,16 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
 
     Char type = *ptr;
     switch (type) {
+    case 'a':
+    case 'A':
+        spec->type = Spec::HexFloat;
+        spec->upperCase = type == 'A';
+        if (!precision) {
+            spec->precision = 4;
+        }
+        ++ ptr;
+        break;
+
     case 'b':
     case 'B':
         spec->type = Spec::Bin;
@@ -223,7 +233,7 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
         throw std::invalid_argument("Alternate form (#) not allowed in string format specifier");
     }
 
-    if (precision && (!spec->isDecimalType() && spec->type != Spec::Generic)) {
+    if (precision && (!spec->isFloatType() && spec->type != Spec::Generic)) {
         std::string msg = "Cannot specify '.' with '";
         msg += (char)type;
         msg += "'.";
@@ -238,7 +248,7 @@ static void parse_format_internal(const Char* fmt, typename BasicFormatItem<Char
     // Format string similar to Python, but a bit more limited:
     // https://docs.python.org/3/library/string.html#format-string-syntax
     //
-    // And added "a" and "A" format specifier from C99 format strings.
+    // And added "a" and "A" format specifier from C99 format strings and upper case variant of some more types.
     //
     // replacement_field ::=  "{" [arg_index] ["!" conversion] [":" format_spec] "}"
     // arg_index         ::=  integer
@@ -249,7 +259,7 @@ static void parse_format_internal(const Char* fmt, typename BasicFormatItem<Char
     // sign              ::=  "+" | "-" | " "
     // width             ::=  integer
     // precision         ::=  integer
-    // type              ::=  "b" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "s" | "x" | "X" | "%" | "a" | "A"
+    // type              ::=  "b" | "B" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "O" | "s" | "S" | "x" | "X" | "%" | "a" | "A"
 
     const std::basic_string<Char> empty;
     std::size_t currentIndex = 0;
