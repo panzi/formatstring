@@ -1,5 +1,6 @@
 #ifndef FORMATSTRING_EXCEPTIONS_H
 #define FORMATSTRING_EXCEPTIONS_H
+#pragma once
 
 #include <stdexcept>
 #include <string>

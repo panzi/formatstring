@@ -1,5 +1,6 @@
 #ifndef FORMATSTRING_CONVERSION_H
 #define FORMATSTRING_CONVERSION_H
+#pragma once
 
 namespace formatstring {
     enum Conversion {

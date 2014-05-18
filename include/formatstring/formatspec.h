@@ -1,5 +1,6 @@
 #ifndef FORMATSTRING_FORMATSPEC_H
 #define FORMATSTRING_FORMATSPEC_H
+#pragma once
 
 #include <cstdint>
 #include <string>

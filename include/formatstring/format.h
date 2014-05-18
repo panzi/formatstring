@@ -1,5 +1,6 @@
 #ifndef FORMATSTRING_FORMAT_H
 #define FORMATSTRING_FORMAT_H
+#pragma once
 
 #include <string>
 #include <iosfwd>

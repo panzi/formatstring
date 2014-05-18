@@ -1,5 +1,6 @@
 #ifndef FORMATSTRING_FORMATVALUE_H
 #define FORMATSTRING_FORMATVALUE_H
+#pragma once
 
 #include <stdexcept>
 #include <iomanip>

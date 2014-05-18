@@ -1,5 +1,6 @@
 #ifndef FORMATSTRING_STRFORMATITEM_H
 #define FORMATSTRING_STRFORMATITEM_H
+#pragma once
 
 #include "formatstring/formatitem.h"
 

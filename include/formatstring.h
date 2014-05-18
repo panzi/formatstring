@@ -1,5 +1,6 @@
 #ifndef FORMMATSTRING_H
 #define FORMMATSTRING_H
+#pragma once
 
 #include "formatstring/exceptions.h"
 #include "formatstring/format.h"
