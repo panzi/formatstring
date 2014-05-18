@@ -76,30 +76,47 @@ namespace formatstring {
         Type      type;
         bool      upperCase;
 
-        BasicFormatSpec(const char_type* spec) : BasicFormatSpec() {
+        inline BasicFormatSpec(const char_type* spec) : BasicFormatSpec() {
             parse_spec(spec, this);
         }
 
-        BasicFormatSpec(const std::basic_string<char_type>& spec) : BasicFormatSpec(spec.c_str()) {}
+        inline BasicFormatSpec(const std::basic_string<char_type>& spec) : BasicFormatSpec(spec.c_str()) {}
 
         BasicFormatSpec(const self_type& other) = default;
 
-        inline BasicFormatSpec() :
-            fill(' '), alignment(DefaultAlignment), sign(DefaultSign), alternate(false), width(0),
-            thoudsandsSeperator(false), precision(DEFAULT_PRECISION), type(Generic), upperCase(false) {}
+        inline BasicFormatSpec(
+                char_type fill = ' ',
+                Alignment alignment = DefaultAlignment,
+                Sign      sign = DefaultSign,
+                bool      alternate = false,
+                int       width = 0,
+                bool      thoudsandsSeperator = false,
+                int       precision = DEFAULT_PRECISION,
+                Type      type = Generic,
+                bool      upperCase = false) :
+            fill(fill), alignment(alignment), sign(sign), alternate(alternate), width(width),
+            thoudsandsSeperator(thoudsandsSeperator), precision(precision), type(type), upperCase(upperCase) {}
 
         self_type& operator= (const self_type& other) = default;
 
-        self_type& operator= (const std::basic_string<Char>& spec) {
+        inline self_type& operator= (const std::basic_string<Char>& spec) {
             *this = self_type::DEFAULT;
             parse_spec(spec.c_str(), this);
             return *this;
         }
 
-        self_type& operator= (const Char* spec) {
+        inline self_type& operator= (const Char* spec) {
             *this = self_type::DEFAULT;
             parse_spec(spec, this);
             return *this;
+        }
+
+        inline bool equals(const self_type& other) const {
+            return fill == other.fill && alignment == other.alignment &&
+                   sign == other.sign && alternate == other.alternate &&
+                   width == other.width && thoudsandsSeperator == other.thoudsandsSeperator &&
+                   precision == other.precision && type == other.type &&
+                   upperCase == other.upperCase;
         }
 
         inline bool isNumberType() const {
@@ -158,6 +175,16 @@ namespace formatstring {
             }
         }
     };
+
+    template<typename Char>
+    inline bool operator==(const BasicFormatSpec<Char>& lhs, const BasicFormatSpec<Char>& rhs) {
+        return lhs.equals(rhs);
+    }
+
+    template<typename Char>
+    inline bool operator!=(const BasicFormatSpec<Char>& lhs, const BasicFormatSpec<Char>& rhs) {
+        return !lhs.equals(rhs);
+    }
 }
 
 #endif // FORMATSTRING_FORMATSPEC_H

@@ -121,6 +121,8 @@ int main() {
     void *vptr = intarr;
     std::cout << format(".{:_^20}.\n", vptr);
 
+    std::cout << format("{} {}\n", FormatSpec("_^020") == FormatSpec("_^20"), FormatSpec(" =") != FormatSpec(""));
+
     auto dbgfmt = debug_compile("debug: {} {!r}\n");
     Format emptyfmt = dbgfmt;
     std::cout << debug("debug: {:_^20}\n", "foo bar") << dbgfmt(12, 'A') << emptyfmt(12, 'A');
