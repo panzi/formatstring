@@ -123,11 +123,11 @@ namespace formatstring {
         struct basic_names {
             typedef Char char_type;
 
-            static const Char* TRUE_LOWER;
-            static const Char* TRUE_UPPER;
+            static const Char* const TRUE_LOWER;
+            static const Char* const TRUE_UPPER;
 
-            static const Char* FALSE_LOWER;
-            static const Char* FALSE_UPPER;
+            static const Char* const FALSE_LOWER;
+            static const Char* const FALSE_UPPER;
         };
 
         typedef basic_names<char>     names;
