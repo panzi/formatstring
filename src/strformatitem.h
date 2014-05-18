@@ -26,6 +26,7 @@ namespace formatstring {
     typedef BasicStrFormatItem<char> StrFormatItem;
     typedef BasicStrFormatItem<wchar_t> WStrFormatItem;
 
+    // ---- extern template instantiations ----
     extern template class BasicStrFormatItem<char>;
     extern template class BasicStrFormatItem<wchar_t>;
 

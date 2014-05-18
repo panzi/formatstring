@@ -8,5 +8,6 @@
 #include "formatstring/formatspec.h"
 #include "formatstring/formattedvalue.h"
 #include "formatstring/formatter.h"
+#include "formatstring/format_traits.h"
 
 #endif // FORMMATSTRING_H

@@ -2,6 +2,7 @@
 #define FORMATSTRING_FORMATTEDVALUE_H
 #pragma once
 
+#include "formatstring/export.h"
 #include "formatstring/format.h"
 #include "formatstring/formatter.h"
 #include "formatstring/formatspec.h"
@@ -217,18 +218,20 @@ namespace formatstring {
         BasicFormatSpec<Char>                   m_spec;
     };
 
-    extern template class BasicFormattedValue<char>;
+    // ---- extern template instantiations ----
+    extern template class FORMATSTRING_EXPORT BasicFormattedValue<char>;
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    extern template class BasicFormattedValue<char16_t>;
+    extern template class FORMATSTRING_EXPORT BasicFormattedValue<char16_t>;
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    extern template class BasicFormattedValue<char32_t>;
+    extern template class FORMATSTRING_EXPORT BasicFormattedValue<char32_t>;
 #endif
 
-    extern template class BasicFormattedValue<wchar_t>;
+    extern template class FORMATSTRING_EXPORT BasicFormattedValue<wchar_t>;
 
+    // ---- helper functions ----
     template<typename Char,typename T>
     inline BasicFormattedValue<Char> val(const T& value) {
         return BasicFormattedValue<Char>(value,NoConv,BasicFormatSpec<Char>::DEFAULT);
@@ -397,81 +400,81 @@ namespace formatstring {
 
     template<typename Iter> inline WFormattedValue   wslice(  Iter begin, Iter end) { return slice<wchar_t,Iter>(begin, end); }
 
-    template<typename Char,typename NumberType>
-    inline BasicFormattedValue<Char> bin(NumberType value) {
+    template<typename Char,typename Number>
+    inline BasicFormattedValue<Char> bin(Number value) {
         BasicFormattedValue<Char> fmt = val(value);
         fmt.bin();
         return fmt;
     }
 
-    template<typename NumberType> inline FormattedValue    bin(   NumberType value) { return bin<char,NumberType>(value); }
+    template<typename Number> inline FormattedValue    bin(   Number value) { return bin<char,Number>(value); }
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    template<typename NumberType> inline U16FormattedValue u16bin(NumberType value) { return bin<char16_t,NumberType>(value); }
+    template<typename Number> inline U16FormattedValue u16bin(Number value) { return bin<char16_t,Number>(value); }
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    template<typename NumberType> inline U32FormattedValue u32bin(NumberType value) { return bin<char32_t,NumberType>(value); }
+    template<typename Number> inline U32FormattedValue u32bin(Number value) { return bin<char32_t,Number>(value); }
 #endif
 
-    template<typename NumberType> inline WFormattedValue   wbin(  NumberType value) { return bin<wchar_t,NumberType>(value); }
+    template<typename Number> inline WFormattedValue   wbin(  Number value) { return bin<wchar_t,Number>(value); }
 
-    template<typename Char,typename NumberType>
-    inline BasicFormattedValue<Char> dec(NumberType value) {
+    template<typename Char,typename Number>
+    inline BasicFormattedValue<Char> dec(Number value) {
         BasicFormattedValue<Char> fmt = val(value);
         fmt.dec();
         return fmt;
     }
 
-    template<typename NumberType> inline FormattedValue    dec(   NumberType value) { return dec<char,NumberType>(value); }
+    template<typename Number> inline FormattedValue    dec(   Number value) { return dec<char,Number>(value); }
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    template<typename NumberType> inline U16FormattedValue u16dec(NumberType value) { return dec<char16_t,NumberType>(value); }
+    template<typename Number> inline U16FormattedValue u16dec(Number value) { return dec<char16_t,Number>(value); }
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    template<typename NumberType> inline U32FormattedValue u32dec(NumberType value) { return dec<char32_t,NumberType>(value); }
+    template<typename Number> inline U32FormattedValue u32dec(Number value) { return dec<char32_t,Number>(value); }
 #endif
 
-    template<typename NumberType> inline WFormattedValue   wdec(  NumberType value) { return dec<wchar_t,NumberType>(value); }
+    template<typename Number> inline WFormattedValue   wdec(  Number value) { return dec<wchar_t,Number>(value); }
 
-    template<typename Char,typename NumberType>
-    inline BasicFormattedValue<Char> oct(NumberType value) {
+    template<typename Char,typename Number>
+    inline BasicFormattedValue<Char> oct(Number value) {
         BasicFormattedValue<Char> fmt = val(value);
         fmt.oct();
         return fmt;
     }
 
-    template<typename NumberType> inline FormattedValue    oct(   NumberType value) { return oct<char,NumberType>(value); }
+    template<typename Number> inline FormattedValue    oct(   Number value) { return oct<char,Number>(value); }
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    template<typename NumberType> inline U16FormattedValue u16oct(NumberType value) { return oct<char16_t,NumberType>(value); }
+    template<typename Number> inline U16FormattedValue u16oct(Number value) { return oct<char16_t,Number>(value); }
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    template<typename NumberType> inline U32FormattedValue u32oct(NumberType value) { return oct<char32_t,NumberType>(value); }
+    template<typename Number> inline U32FormattedValue u32oct(Number value) { return oct<char32_t,Number>(value); }
 #endif
 
-    template<typename NumberType> inline WFormattedValue   woct(  NumberType value) { return oct<wchar_t,NumberType>(value); }
+    template<typename Number> inline WFormattedValue   woct(  Number value) { return oct<wchar_t,Number>(value); }
 
-    template<typename Char,typename NumberType>
-    inline BasicFormattedValue<Char> hex(NumberType value) {
+    template<typename Char,typename Number>
+    inline BasicFormattedValue<Char> hex(Number value) {
         BasicFormattedValue<Char> fmt = val(value);
         fmt.hex();
         return fmt;
     }
 
-    template<typename NumberType> inline FormattedValue    hex(   NumberType value) { return hex<char,NumberType>(value); }
+    template<typename Number> inline FormattedValue    hex(   Number value) { return hex<char,Number>(value); }
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    template<typename NumberType> inline U16FormattedValue u16hex(NumberType value) { return hex<char16_t,NumberType>(value); }
+    template<typename Number> inline U16FormattedValue u16hex(Number value) { return hex<char16_t,Number>(value); }
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    template<typename NumberType> inline U32FormattedValue u32hex(NumberType value) { return hex<char32_t,NumberType>(value); }
+    template<typename Number> inline U32FormattedValue u32hex(Number value) { return hex<char32_t,Number>(value); }
 #endif
 
-    template<typename NumberType> inline WFormattedValue   whex(  NumberType value) { return hex<wchar_t,NumberType>(value); }
+    template<typename Number> inline WFormattedValue   whex(  Number value) { return hex<wchar_t,Number>(value); }
 
     template<typename Char,typename T>
     inline BasicFormattedValue<Char> str(const T& value) {

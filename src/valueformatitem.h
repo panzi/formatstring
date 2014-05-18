@@ -35,6 +35,7 @@ namespace formatstring {
     typedef BasicValueFormatItem<char>    ValueFormatItem;
     typedef BasicValueFormatItem<wchar_t> WValueFormatItem;
 
+    // ---- extern template instantiations ----
     extern template class BasicValueFormatItem<char>;
     extern template class BasicValueFormatItem<wchar_t>;
 

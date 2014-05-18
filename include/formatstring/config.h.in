@@ -1,0 +1,8 @@
+#ifndef FORMATSTRING_CONFIG_H_IN
+#define FORMATSTRING_CONFIG_H_IN
+
+namespace formatstring {
+
+}
+
+#endif // FORMATSTRING_CONFIG_H_IN

@@ -6,6 +6,9 @@
 #include <iosfwd>
 #include <sstream>
 
+#include "formatstring/config.h"
+#include "formatstring/export.h"
+
 #include "formatstring/formatter.h"
 #include "formatstring/formatitem.h"
 
@@ -31,20 +34,20 @@ namespace formatstring {
 
     typedef BasicBoundFormat<char> BoundFormat;
 
-    void parse_format(const char* fmt, BasicFormatItem<char>::List *items);
+    FORMATSTRING_EXPORT void parse_format(const char* fmt, BasicFormatItem<char>::List *items);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    void parse_format(const char16_t* fmt, BasicFormatItem<char16_t>::List *items);
+    FORMATSTRING_EXPORT void parse_format(const char16_t* fmt, BasicFormatItem<char16_t>::List *items);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    void parse_format(const char32_t* fmt, BasicFormatItem<char32_t>::List *items);
+    FORMATSTRING_EXPORT void parse_format(const char32_t* fmt, BasicFormatItem<char32_t>::List *items);
 #endif
 
-    void parse_format(const wchar_t* fmt, BasicFormatItem<wchar_t>::List *items);
+    FORMATSTRING_EXPORT void parse_format(const wchar_t* fmt, BasicFormatItem<wchar_t>::List *items);
 
     template<typename Char>
-    class BasicFormat {
+    class FORMATSTRING_EXPORT BasicFormat {
     public:
         typedef Char char_type;
 
@@ -80,7 +83,7 @@ namespace formatstring {
     };
 
     template<typename Char>
-    class BasicBoundFormat {
+    class FORMATSTRING_EXPORT BasicBoundFormat {
     public:
         typedef Char char_type;
 
@@ -280,21 +283,21 @@ namespace formatstring {
     }
 #endif
 
-    extern template class BasicFormat<char>;
-    extern template class BasicBoundFormat<char>;
+    extern template class FORMATSTRING_EXPORT BasicFormat<char>;
+    extern template class FORMATSTRING_EXPORT BasicBoundFormat<char>;
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    extern template class BasicFormat<char16_t>;
-    extern template class BasicBoundFormat<char16_t>;
+    extern template class FORMATSTRING_EXPORT BasicFormat<char16_t>;
+    extern template class FORMATSTRING_EXPORT BasicBoundFormat<char16_t>;
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    extern template class BasicFormat<char32_t>;
-    extern template class BasicBoundFormat<char32_t>;
+    extern template class FORMATSTRING_EXPORT BasicFormat<char32_t>;
+    extern template class FORMATSTRING_EXPORT BasicBoundFormat<char32_t>;
 #endif
 
-    extern template class BasicFormat<wchar_t>;
-    extern template class BasicBoundFormat<wchar_t>;
+    extern template class FORMATSTRING_EXPORT BasicFormat<wchar_t>;
+    extern template class FORMATSTRING_EXPORT BasicBoundFormat<wchar_t>;
 }
 
 #endif // FORMATSTRING_FORMAT_H

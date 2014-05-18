@@ -6,9 +6,11 @@
 #include <string>
 #include <cstdint>
 
+#include "formatstring/export.h"
+
 namespace formatstring {
 
-    class InvalidFormatStringException : public std::invalid_argument {
+    class FORMATSTRING_EXPORT InvalidFormatStringException : public std::invalid_argument {
     public:
         InvalidFormatStringException(std::string::size_type pos, const char* what);
 
@@ -20,7 +22,7 @@ namespace formatstring {
         std::string::size_type m_pos;
     };
 
-    class InvalidFormatArgumentException : public std::out_of_range {
+    class FORMATSTRING_EXPORT InvalidFormatArgumentException : public std::out_of_range {
     public:
         InvalidFormatArgumentException(std::size_t index);
 

@@ -2,6 +2,8 @@
 #define FORMATSTRING_FORMATSPEC_H
 #pragma once
 
+#include "formatstring/export.h"
+
 #include <cstdint>
 #include <string>
 
@@ -22,20 +24,20 @@ namespace formatstring {
 
     typedef BasicFormatSpec<wchar_t> WFormatSpec;
 
-    void parse_spec(const char* str, FormatSpec* spec);
+    FORMATSTRING_EXPORT void parse_spec(const char* str, FormatSpec* spec);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    void parse_spec(const char16_t* str, U16FormatSpec* spec);
+    FORMATSTRING_EXPORT void parse_spec(const char16_t* str, U16FormatSpec* spec);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    void parse_spec(const char32_t* str, U32FormatSpec* spec);
+    FORMATSTRING_EXPORT void parse_spec(const char32_t* str, U32FormatSpec* spec);
 #endif
 
-    void parse_spec(const wchar_t* str, WFormatSpec* spec);
+    FORMATSTRING_EXPORT void parse_spec(const wchar_t* str, WFormatSpec* spec);
 
     template<typename Char>
-    struct BasicFormatSpec {
+    struct FORMATSTRING_EXPORT BasicFormatSpec {
         typedef Char char_type;
         typedef BasicFormatSpec<char_type> self_type;
 
@@ -200,6 +202,7 @@ namespace formatstring {
         return !lhs.equals(rhs);
     }
 
+    // ---- extern template instantiations ----
     extern template class BasicFormatSpec<char>;
     extern template class BasicFormatSpec<wchar_t>;
 
