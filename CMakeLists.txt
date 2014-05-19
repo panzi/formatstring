@@ -20,6 +20,59 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wall -Wextra -pedantic -Werror -O3")
 endif()
 
+include(CheckCXXSourceCompiles)
+
+check_cxx_source_compiles("
+#include <ios>
+int main() {
+	std::cout.setf(std::ios::hexfloat, std::ios::floatfield);
+	return 0;
+}
+" FORMATSTRING_HEXFLOAT_SUPPORT)
+
+check_cxx_source_compiles("
+#include <iostream>
+#include <sstream>
+#include <locale>
+
+int main() {
+	std::wstringstream buf;
+	buf.imbue(std::locale(std::locale(), new std::numpunct<wchar_t>()));
+	buf << L\"test\" << L'\\\\n';
+	return 0;
+}
+" FORMATSTRING_WCHAR_SUPPORT)
+
+if(NOT(FORMATSTRING_WCHAR_SUPPORT))
+	message(FATAL_ERROR "No wide string (std::wstring, wchar_t, ...) detected.")
+endif()
+
+check_cxx_source_compiles("
+#include <iostream>
+#include <sstream>
+#include <locale>
+
+int main() {
+	std::basic_stringstream<char16_t> buf;
+	buf.imbue(std::locale(std::locale(), new std::numpunct<char16_t>()));
+	buf << u\"test\" << u'\\\\u000a';
+	return 0;
+}
+" FORMATSTRING_CHAR16_SUPPORT)
+
+check_cxx_source_compiles("
+#include <iostream>
+#include <sstream>
+#include <locale>
+
+int main() {
+	std::basic_stringstream<char32_t> buf;
+	buf.imbue(std::locale(std::locale(), new std::numpunct<char32_t>()));
+	buf << U\"test\" << U'\\\\U0000000a';
+	return 0;
+}
+" FORMATSTRING_CHAR32_SUPPORT)
+
 include_directories(include "${CMAKE_CURRENT_BINARY_DIR}/include")
 
 if(WITH_EXAMPLES)
