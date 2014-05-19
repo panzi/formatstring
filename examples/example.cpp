@@ -10,6 +10,11 @@
 
 using namespace formatstring;
 
+// helper template
+template<typename Char>
+struct strings;
+
+// some example classes to illustrate all the different ways to define your own formatting for your own classes
 struct Example1 {
     Example1(const std::string& value) : member(value) {}
     Example1(const char* value) : member(value) {}
@@ -24,25 +29,48 @@ struct Example2 {
     std::string member;
 };
 
+template<typename Char>
+struct Example3 {
+    Example3(const std::basic_string<Char>& value) : member(value) {}
+    Example3(const Char* value) : member(value) {}
+
+    std::basic_string<Char> member;
+};
+
+// most simple case, just an operator<< for ostream:
 std::ostream& operator << (std::ostream& out, const Example1& value) {
     return out << "<Example1 " << value.member << ">";
 }
 
+// or cover all possible basic_ostream variants at once:
+// Note the effort to get the correctly typed stirng constants. Another option would be to overload
+// the operator function for the appropriate types instead.
 template<typename Char>
-class Example2Formatter : public Formatter {
+std::basic_ostream<Char>& operator << (std::basic_ostream<Char>& out, const Example2& value) {
+    return out << format(strings<Char>::str2, value.member);
+}
+
+
+// Or if you would like to do something more complex depending on the format spec and conversion
+// when a object of your custom class is formatted you can implement your own formatter.
+// You don't need to make it a template class. If you want you just can implement it for char
+// based std::ostream and derive the Formatter class (which is a typedef to BasicFormatter<char>)
+// instead.
+template<typename Char>
+class Example3Formatter : public BasicFormatter<Char> {
 public:
-    Example2Formatter(const Example2* value) : value(value) {}
+    Example3Formatter(const Example3<Char>* value) : value(value) {}
 
     virtual void format(std::basic_ostream<Char>& out, Conversion conv, const BasicFormatSpec<Char>& spec) const {
         std::basic_ostringstream<Char> buffer;
 
         switch (conv) {
         case ReprConv:
-            buffer << "Example2(" << repr(value->member) << ")";
+            buffer << formatstring::format(strings<Char>::repr3, value->member);
             break;
 
         default:
-            buffer << "<Example2 " << value->member << ">";
+            buffer << formatstring::format(strings<Char>::str3, value->member);
             break;
         }
 
@@ -50,22 +78,61 @@ public:
     }
 
 private:
-    const Example2* value;
+    const Example3<Char>* value;
 };
 
+// You then need to register your formatter by specializing the format_traits template
+// class in the formatstring namespace like this:
 namespace formatstring {
 
     template<typename Char>
-    struct format_traits<Char, Example2> {
+    struct format_traits< Char, Example3<Char> > {
         typedef Char char_type;
-        typedef Example2 value_type;
+        typedef Example3<Char> value_type;
 
-        static inline Example2Formatter<Char>* make_formatter(const Example2& value) {
-            return new Example2Formatter<Char>(&value);
+        static inline Example3Formatter<Char>* make_formatter(const Example3<Char>& value) {
+            return new Example3Formatter<Char>(&value);
         }
     };
 
 }
+
+// string table to support all kinds of string types:
+template<>
+struct strings<char> {
+    static constexpr const char*const str2  = "<Example2 {}>";
+    static constexpr const char*const str3  = "<Example3 {}>";
+    static constexpr const char*const repr3 = "Example3({!r})";
+};
+
+template<>
+struct strings<wchar_t> {
+    static constexpr const wchar_t*const str2  = L"<Example2 {}>";
+    static constexpr const wchar_t*const str3  = L"<Example3 {}>";
+    static constexpr const wchar_t*const repr3 = L"Example3({!r})";
+};
+
+// The header formatstring/config.h defines these feature test macros.
+// You can use them to condittionally support char16_t and char32_t
+// based string operations. Support is automatically detected when the
+// formatstring library is compiled.
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+template<>
+struct strings<char16_t> {
+    static constexpr const char16_t*const str2  = u"<Example2 {}>";
+    static constexpr const char16_t*const str3  = u"<Example3 {}>";
+    static constexpr const char16_t*const repr3 = u"Example3({!r})";
+};
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+template<>
+struct strings<char32_t> {
+    static constexpr const char32_t*const str2  = U"<Example2 {}>";
+    static constexpr const char32_t*const str3  = U"<Example3 {}>";
+    static constexpr const char32_t*const repr3 = U"Example3({!r})";
+};
+#endif
 
 int main() {
     std::vector<std::string> vec = {"foo", "bar", "baz"};
@@ -89,11 +156,15 @@ int main() {
     std::string ch = repr('\n');
 
     Example1 ex1("foo bar");
+    Example2 ex2_char("char");
+    Example3<wchar_t> ex2_wchar(L"wchar_t");
     Example2 *ptr = new Example2("ptr");
     std::shared_ptr<Example2> ptr2(new Example2("shared"));
-    std::cout << format("{:_<20} ", ex1) << repr(Example1("bla")) << '\n';
+    std::cout << format("{:_<20} {:_>20}", ex1, ex2_char) << repr(Example1("bla")) << '\n';
     std::cout << format("{}, {!r}, ptr: {!s}, *ptr: {}, shared_ptr: {}, *shared_ptr: {}\n",
                         Example2("blub"), Example2("bla\nbla"), ptr, *ptr, ptr2, *ptr2);
+    std::cout.flush();
+    std::wcout << format(L"{}\n", ex2_wchar) << std::flush;
     delete ptr;
 
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';
