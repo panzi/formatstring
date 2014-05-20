@@ -2,11 +2,14 @@ cmake_minimum_required(VERSION 2.8)
 
 project(formatstring)
 
-set(FORMATSTRING_MAJOR_VERSION 1)
-set(FORMATSTRING_MINOR_VERSION 0)
+set(FORMATSTRING_MAJOR_VERSION 0)
+set(FORMATSTRING_MINOR_VERSION 9)
 set(FORMATSTRING_PATCH_VERSION 0)
+set(FORMATSTRING_NAME "formatstring${FORMATSTRING_MAJOR_VERSION}${FORMATSTRING_MINOR_VERSION}")
+set(FORMATSTRING_VERSION "${FORMATSTRING_MAJOR_VERSION}.${FORMATSTRING_MINOR_VERSION}.${FORMATSTRING_PATCH_VERSION}")
 
 option(WITH_EXAMPLES "Build examples." OFF)
+option(WITH_TESTS "Build tests." OFF)
 
 if(MSVC)
 	# Force to always compile with W4
@@ -44,7 +47,7 @@ int main() {
 " FORMATSTRING_WCHAR_SUPPORT)
 
 if(NOT(FORMATSTRING_WCHAR_SUPPORT))
-	message(FATAL_ERROR "No wide string (std::wstring, wchar_t, ...) detected.")
+	message(FATAL_ERROR "No wide string support (std::wstring, wchar_t, std::numpunct<wchar_t>, ...) detected.")
 endif()
 
 check_cxx_source_compiles("
@@ -75,11 +78,45 @@ int main() {
 
 include_directories(include "${CMAKE_CURRENT_BINARY_DIR}/include")
 
+# from libpng's CMakeFile.txt
+macro(create_symlink SRC_FILE DEST_FILE)
+	file(REMOVE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DEST_FILE})
+	if(WIN32 AND NOT CYGWIN AND NOT MSYS)
+		add_custom_command(
+			OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DEST_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${DEST_FILE}
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" ${CMAKE_CURRENT_BINARY_DIR}/${DEST_FILE}
+			DEPENDS ${PNG_LIB_TARGETS})
+		add_custom_target(${DEST_FILE}_COPY ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${DEST_FILE})
+	else()
+		get_filename_component(LINK_TARGET "${SRC_FILE}" NAME)
+		execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${LINK_TARGET}" ${DEST_FILE} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+	endif()
+endmacro()
+
+# for CMAKE_INSTALL_LIBDIR:
+include(GNUInstallDirs)
+
+if(NOT WIN32 OR CYGWIN OR MINGW)
+	configure_file(formatstring.pc.in
+		${CMAKE_CURRENT_BINARY_DIR}/${FORMATSTRING_NAME}.pc @ONLY)
+
+	create_symlink(${FORMATSTRING_NAME}.pc formatstring.pc)
+
+	install(FILES
+		${CMAKE_CURRENT_BINARY_DIR}/${FORMATSTRING_NAME}.pc
+		${CMAKE_CURRENT_BINARY_DIR}/formatstring.pc
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
+
 if(WITH_EXAMPLES)
 	add_subdirectory(examples)
 endif()
 
 add_subdirectory(src)
+
+if(WITH_TESTS)
+	add_subdirectory(test)
+endif()
 
 # uninstall target
 configure_file(

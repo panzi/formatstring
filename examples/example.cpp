@@ -50,7 +50,6 @@ std::basic_ostream<Char>& operator << (std::basic_ostream<Char>& out, const Exam
     return out << format(strings<Char>::str2, value.member);
 }
 
-
 // Or if you would like to do something more complex depending on the format spec and conversion
 // when a object of your custom class is formatted you can implement your own formatter.
 // You don't need to make it a template class. If you want you just can implement it for char

@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/include/@FORMATSTRING_NAME@
+
+Name: libformatstring
+Description: A C++14 type safe format string library heavily inspired by Python's str.format() function.
+Version: @FORMATSTRING_VERSION@
+URL: https://github.com/panzi/formatstring
+Libs: -L${libdir} -l@FORMATSTRING_NAME@
+Cflags: -I${includedir}
