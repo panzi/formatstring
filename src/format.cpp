@@ -244,7 +244,7 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
 }
 
 template<typename Char>
-static void parse_format_internal(const Char* fmt, typename BasicFormatItem<Char>::List* items) {
+void formatstring::parse_format(const Char* fmt, typename BasicFormatItem<Char>::List* items) {
     // Format string similar to Python, but a bit more limited:
     // https://docs.python.org/3/library/string.html#format-string-syntax
     //
@@ -347,53 +347,34 @@ static void parse_format_internal(const Char* fmt, typename BasicFormatItem<Char
     }
 }
 
-void formatstring::parse_format(const char* fmt, BasicFormatItem<char>::List *items) {
-    parse_format_internal(fmt, items);
-}
-
-#ifdef FORMATSTRING_CHAR16_SUPPORT
-void formatstring::parse_format(const char16_t* fmt, BasicFormatItem<char16_t>::List *items) {
-    parse_format_internal(fmt, items);
-}
-#endif
-
-#ifdef FORMATSTRING_CHAR32_SUPPORT
-void formatstring::parse_format(const char32_t* fmt, BasicFormatItem<char32_t>::List *items) {
-    parse_format_internal(fmt, items);
-}
-#endif
-
-void formatstring::parse_format(const wchar_t* fmt, BasicFormatItem<wchar_t>::List *items) {
-    parse_format_internal(fmt, items);
-}
-
 template<typename Char>
-static inline void parse_spec_templ(const Char* str, BasicFormatSpec<Char>* spec) {
-    const Char* ptr = parse_spec_internal(str, str, spec);
-    if (*ptr) {
-        throw InvalidFormatStringException(ptr - str, "expected end of string");
-    }
+void formatstring::parse_spec(const Char* str, BasicFormatSpec<Char>* spec) {
+    parse_spec_internal(str, str, spec);
 }
 
-void formatstring::parse_spec(const char* str, FormatSpec* spec) {
-    parse_spec_templ(str, spec);
-}
+template void parse_format<char>(const char* fmt, FormatItem::List *items);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-void formatstring::parse_spec(const char16_t* str, U16FormatSpec* spec) {
-    parse_spec_templ(str, spec);
-}
+template void parse_format<char16_t>(const char16_t* fmt, U16FormatItem::List *items);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-void formatstring::parse_spec(const char32_t* str, U32FormatSpec* spec) {
-    parse_spec_templ(str, spec);
-}
+template void parse_format<char32_t>(const char32_t* fmt, U32FormatItem::List *items);
 #endif
 
-void formatstring::parse_spec(const wchar_t* str, WFormatSpec* spec) {
-    parse_spec_templ(str, spec);
-}
+template void parse_format<wchar_t>(const wchar_t* fmt, WFormatItem::List *items);
+
+template FORMATSTRING_EXPORT void parse_spec<char>(const char* str, FormatSpec* spec);
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+template FORMATSTRING_EXPORT void parse_spec<char16_t>(const char16_t* str, U16FormatSpec* spec);
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+template FORMATSTRING_EXPORT void parse_spec<char32_t>(const char32_t* str, U32FormatSpec* spec);
+#endif
+
+template FORMATSTRING_EXPORT void parse_spec<wchar_t>(const wchar_t* str, WFormatSpec* spec);
 
 template class BasicFormat<char>;
 template class BasicBoundFormat<char>;

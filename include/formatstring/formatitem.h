@@ -24,7 +24,16 @@ namespace formatstring {
     };
 
     typedef BasicFormatItem<char> FormatItem;
+    typedef BasicFormatItem<wchar_t> WFormatItem;
     typedef FormatItem::List FormatItems;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    typedef BasicFormatItem<char16_t> U16FormatItem;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    typedef BasicFormatItem<char32_t> U32FormatItem;
+#endif
 }
 
-#endif // UNISTR_FORMATITEM_H
+#endif // FORMATSTRING_FORMATITEM_H

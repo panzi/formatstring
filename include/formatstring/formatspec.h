@@ -25,17 +25,8 @@ namespace formatstring {
 
     typedef BasicFormatSpec<wchar_t> WFormatSpec;
 
-    FORMATSTRING_EXPORT void parse_spec(const char* str, FormatSpec* spec);
-
-#ifdef FORMATSTRING_CHAR16_SUPPORT
-    FORMATSTRING_EXPORT void parse_spec(const char16_t* str, U16FormatSpec* spec);
-#endif
-
-#ifdef FORMATSTRING_CHAR32_SUPPORT
-    FORMATSTRING_EXPORT void parse_spec(const char32_t* str, U32FormatSpec* spec);
-#endif
-
-    FORMATSTRING_EXPORT void parse_spec(const wchar_t* str, WFormatSpec* spec);
+    template<typename Char>
+    void parse_spec(const Char* str, BasicFormatSpec<Char>* spec);
 
     template<typename Char>
     struct FORMATSTRING_EXPORT BasicFormatSpec {
@@ -207,15 +198,27 @@ namespace formatstring {
     }
 
     // ---- extern template instantiations ----
-    extern template class BasicFormatSpec<char>;
-    extern template class BasicFormatSpec<wchar_t>;
+    extern template FORMATSTRING_EXPORT void parse_spec<char>(const char* str, FormatSpec* spec);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    extern template class BasicFormatSpec<char16_t>;
+    extern template FORMATSTRING_EXPORT void parse_spec<char16_t>(const char16_t* str, U16FormatSpec* spec);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    extern template class BasicFormatSpec<char32_t>;
+    extern template FORMATSTRING_EXPORT void parse_spec<char32_t>(const char32_t* str, U32FormatSpec* spec);
+#endif
+
+    extern template FORMATSTRING_EXPORT void parse_spec<wchar_t>(const wchar_t* str, WFormatSpec* spec);
+
+    extern template class FORMATSTRING_EXPORT BasicFormatSpec<char>;
+    extern template class FORMATSTRING_EXPORT BasicFormatSpec<wchar_t>;
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    extern template class FORMATSTRING_EXPORT BasicFormatSpec<char16_t>;
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    extern template class FORMATSTRING_EXPORT BasicFormatSpec<char32_t>;
 #endif
 }
 
