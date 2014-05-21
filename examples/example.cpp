@@ -16,8 +16,12 @@ struct strings;
 
 // some example classes to illustrate all the different ways to define your own formatting for your own classes
 struct Example1 {
-    Example1(const std::string& value) : member(value) {}
-    Example1(const char* value) : member(value) {}
+    explicit Example1(const std::string& value) : member(value) {}
+    explicit Example1(const char* value) : member(value) {}
+
+    // demonstrate that it works for non-copyable objects:
+    Example1(const Example1& other) = delete;
+    Example1& operator= (const Example1& other) = delete;
 
     std::string member;
 };
@@ -61,30 +65,6 @@ std::basic_ostream<Char>& operator << (std::basic_ostream<Char>& out, const Exam
 // You don't need to make it a template class. If you want you just can implement it for char
 // based std::ostream and derive the Formatter class (which is a typedef to BasicFormatter<char>)
 // instead.
-template<typename Char>
-class Example3Formatter : public BasicFormatter<Char> {
-public:
-    Example3Formatter(const Example3<Char>* value) : value(value) {}
-
-    virtual void format(std::basic_ostream<Char>& out, Conversion conv, const BasicFormatSpec<Char>& spec) const {
-        std::basic_ostringstream<Char> buffer;
-
-        switch (conv) {
-        case ReprConv:
-            buffer << formatstring::format(strings<Char>::repr3, value->member);
-            break;
-
-        default:
-            buffer << formatstring::format(strings<Char>::str3, value->member);
-            break;
-        }
-
-        format_value(out, buffer.str(), spec);
-    }
-
-private:
-    const Example3<Char>* value;
-};
 
 // You then need to register your formatter by specializing the format_traits template
 // class in the formatstring namespace like this:
@@ -96,19 +76,47 @@ namespace formatstring {
         typedef Char char_type;
         typedef Example3<Char> value_type;
 
-        static inline Example3Formatter<Char>* make_formatter(const Example3<Char>& value) {
-            return new Example3Formatter<Char>(&value);
+        static inline BasicFormatter<Char> make_formatter(const Example3<Char>& value) {
+            return [&value](std::basic_ostream<Char>& out, Conversion conv, const BasicFormatSpec<Char>& spec) {
+                std::basic_ostringstream<Char> buffer;
+
+                switch (conv) {
+                case ReprConv:
+                    buffer << formatstring::format(strings<Char>::repr3, value.member);
+                    break;
+
+                default:
+                    buffer << formatstring::format(strings<Char>::str3, value.member);
+                    break;
+                }
+
+                format_value(out, buffer.str(), spec);
+            };
         }
     };
 #endif
     // this way also derived classes from Example3 will be supported by this formatter
     template<typename Char, typename T>
-    struct format_traits<Char, T, if_derives< T, Example3<Char> > > {
+    struct format_traits<Char, T, if_derived< T, Example3<Char> > > {
         typedef Char char_type;
         typedef T value_type;
 
-        static inline Example3Formatter<Char>* make_formatter(const T& value) {
-            return new Example3Formatter<Char>(&value);
+        static inline BasicFormatter<Char> make_formatter(const T& value) {
+            return [&value](std::basic_ostream<Char>& out, Conversion conv, const BasicFormatSpec<Char>& spec) {
+                std::basic_ostringstream<Char> buffer;
+
+                switch (conv) {
+                case ReprConv:
+                    buffer << formatstring::format(strings<Char>::repr3, value.member);
+                    break;
+
+                default:
+                    buffer << formatstring::format(strings<Char>::str3, value.member);
+                    break;
+                }
+
+                format_value(out, buffer.str(), spec);
+            };
         }
     };
 }

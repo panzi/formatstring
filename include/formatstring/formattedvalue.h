@@ -39,14 +39,14 @@ namespace formatstring {
         BasicFormattedValue(const T& value, Conversion conv, const spec_type& spec) :
             m_formatter(format_traits<Char,T>::make_formatter(value)), m_conv(conv), m_spec(spec) {}
 
-        BasicFormattedValue(BasicFormatter<Char>* formatter, Conversion conv = NoConv, const spec_type& spec = spec_type::DEFAULT) :
+        BasicFormattedValue(BasicFormatter<Char> formatter, Conversion conv = NoConv, const spec_type& spec = spec_type::DEFAULT) :
             m_formatter(formatter), m_conv(conv), m_spec(spec) {}
 
         BasicFormattedValue(BasicFormattedValue<Char>&& other) :
             m_formatter(std::move(other.m_formatter)), m_conv(other.m_conv), m_spec(other.m_spec) {}
 
         inline void format(std::basic_ostream<Char>& out) const {
-            m_formatter->format(out, m_conv, m_spec);
+            m_formatter(out, m_conv, m_spec);
         }
 
         inline operator std::basic_string<Char> () const {
@@ -214,9 +214,9 @@ namespace formatstring {
         }
 
     private:
-        std::unique_ptr< BasicFormatter<Char> > m_formatter;
-        Conversion                              m_conv;
-        BasicFormatSpec<Char>                   m_spec;
+        BasicFormatter<Char>  m_formatter;
+        Conversion            m_conv;
+        BasicFormatSpec<Char> m_spec;
     };
 
     // ---- extern template instantiations ----
@@ -386,7 +386,7 @@ namespace formatstring {
 
     template<typename Char,typename Iter>
     inline BasicFormattedValue<Char> slice(Iter begin, Iter end) {
-        return new SliceFormatter<Char,Iter>(begin, end);
+        return make_slice_formatter<Char,Iter>(begin, end);
     }
 
     template<typename Iter> inline FormattedValue    slice(  Iter begin, Iter end) { return slice<char,Iter>(begin, end); }

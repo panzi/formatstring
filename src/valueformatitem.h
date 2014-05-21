@@ -19,11 +19,11 @@ namespace formatstring {
         BasicValueFormatItem(std::size_t index, Conversion conv, const BasicFormatSpec<Char>& spec) :
             m_index(index), m_conv(conv), m_spec(spec) {}
 
-        virtual void apply(std::basic_ostream<Char>& out, const typename BasicFormatter<Char>::List& formatters) const {
+        virtual void apply(std::basic_ostream<Char>& out, const BasicFormatters<Char>& formatters) const {
             if (m_index >= formatters.size()) {
                 throw InvalidFormatArgumentException(m_index);
             }
-            formatters[m_index]->format(out, m_conv, m_spec);
+            formatters[m_index](out, m_conv, m_spec);
         }
 
     private:

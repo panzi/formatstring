@@ -11,16 +11,13 @@
 namespace formatstring {
 
     template<typename Char>
-    class BasicFormatter;
-
-    template<typename Char>
     class BasicFormatItem {
     public:
         typedef Char char_type;
         typedef std::vector< std::unique_ptr< BasicFormatItem<Char> > > List;
 
         virtual ~BasicFormatItem() {}
-        virtual void apply(std::basic_ostream<Char>& out, const typename BasicFormatter<Char>::List& formatters) const = 0;
+        virtual void apply(std::basic_ostream<Char>& out, const BasicFormatters<Char>& formatters) const = 0;
     };
 
     typedef BasicFormatItem<char> FormatItem;

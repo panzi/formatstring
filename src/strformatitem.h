@@ -14,7 +14,7 @@ namespace formatstring {
         BasicStrFormatItem(const Char* str) : m_str(str) {}
         BasicStrFormatItem(const std::basic_string<Char>& str) : m_str(str) {}
 
-        virtual void apply(std::basic_ostream<Char>& out, const typename BasicFormatter<Char>::List& formatters) const {
+        virtual void apply(std::basic_ostream<Char>& out, const BasicFormatters<Char>& formatters) const {
             (void)formatters;
             out << m_str;
         }
