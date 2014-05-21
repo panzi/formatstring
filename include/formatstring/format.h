@@ -40,8 +40,10 @@ namespace formatstring {
     public:
         typedef Char char_type;
 
-        BasicFormat(const Char* fmt) : m_fmt(std::make_shared<typename BasicFormatItem<Char>::List>()) {
-            parse_format(fmt, &*m_fmt);
+        BasicFormat(const Char* fmt) : m_fmt() {
+            std::shared_ptr<typename BasicFormatItem<Char>::List> fmtptr = std::make_shared<typename BasicFormatItem<Char>::List>();
+            parse_format(fmt, &*fmtptr);
+            m_fmt = fmtptr;
         }
 
         BasicFormat(const std::basic_string<Char>& fmt) : BasicFormat(fmt.c_str()) {}
@@ -68,7 +70,7 @@ namespace formatstring {
         }
 
     private:
-        std::shared_ptr<typename BasicFormatItem<Char>::List> m_fmt;
+        std::shared_ptr<const typename BasicFormatItem<Char>::List> m_fmt;
     };
 
     template<typename Char>
@@ -101,14 +103,18 @@ namespace formatstring {
 
         template<typename... Args>
         BasicBoundFormat(const BasicFormat<Char>& format, const Args&... args) :
-            m_format(format), m_formatters(std::make_shared< BasicFormatters<Char> >()) {
-            unpack_formatters<Char>(*m_formatters, args...);
+            m_format(format), m_formatters() {
+            std::shared_ptr< BasicFormatters<Char> > formatters = std::make_shared< BasicFormatters<Char> >();
+            unpack_formatters<Char>(*formatters, args...);
+            m_formatters = formatters;
         }
 
         template<typename... Args>
         BasicBoundFormat(BasicFormat<Char>&& format, const Args&... args) :
-            m_format(std::move(format)), m_formatters(std::make_shared< BasicFormatters<Char> >()) {
-            unpack_formatters<Char>(*m_formatters, args...);
+            m_format(std::move(format)), m_formatters() {
+            std::shared_ptr< BasicFormatters<Char> > formatters = std::make_shared< BasicFormatters<Char> >();
+            unpack_formatters<Char>(*formatters, args...);
+            m_formatters = formatters;
         }
 
         BasicFormat<Char>& operator= (const BasicFormat<Char>& other) = delete;
@@ -129,8 +135,8 @@ namespace formatstring {
         }
 
     private:
-        BasicFormat<Char> m_format;
-        std::shared_ptr< BasicFormatters<Char> > m_formatters;
+        const BasicFormat<Char> m_format;
+        std::shared_ptr< const BasicFormatters<Char> > m_formatters;
     };
 
     template<typename Char>
