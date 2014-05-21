@@ -32,8 +32,6 @@ namespace formatstring {
     template<typename Char>
     class BasicBoundFormat;
 
-    typedef BasicBoundFormat<char> BoundFormat;
-
     template<typename Char>
     void parse_format(const Char* fmt, typename BasicFormatItem<Char>::List *items);
 
@@ -78,6 +76,23 @@ namespace formatstring {
     public:
         typedef Char char_type;
 
+    private:
+        friend class BasicFormat<Char>;
+
+        template<typename _Char, typename... Args>
+        friend BasicBoundFormat<_Char> format(const std::basic_string<_Char>& fmt, const Args&... args);
+
+        template<typename _Char, typename... Args>
+        friend BasicBoundFormat<_Char> format(const _Char* fmt, const Args&... args);
+
+#ifndef NDEBUG
+        template<typename _Char, typename... Args>
+        friend BasicBoundFormat<_Char> debug(const std::basic_string<_Char>& fmt, const Args&... args);
+
+        template<typename _Char, typename... Args>
+        friend BasicBoundFormat<_Char> debug(const _Char* fmt, const Args&... args);
+#endif
+
         BasicBoundFormat(BasicBoundFormat<Char>&& rhs) :
             m_format(std::move(rhs.m_format)), m_formatters(std::move(rhs.m_formatters)) {}
 
@@ -96,6 +111,9 @@ namespace formatstring {
             unpack_formatters<Char>(*m_formatters, args...);
         }
 
+        BasicFormat<Char>& operator= (const BasicFormat<Char>& other) = delete;
+
+    public:
         inline void write_into(std::basic_ostream<Char>& out) const {
             m_format.apply(out, *m_formatters);
         }
