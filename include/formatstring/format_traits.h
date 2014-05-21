@@ -5,7 +5,12 @@
 #include "formatstring/config.h"
 #include "formatstring/formatter.h"
 
+#include <type_traits>
+
 namespace formatstring {
+
+    template<typename Derived, typename Base>
+    using if_derives = typename std::enable_if<std::is_base_of<Base, Derived>::value>::type;
 
     // ---- fallback ----
     template<typename Char, typename T, typename ENABLE = void>
@@ -363,6 +368,15 @@ namespace formatstring {
         }
     };
 
+    template<typename Char, typename T>
+    struct format_traits< Char, std::initializer_list<T> > {
+        typedef Char char_type;
+        typedef std::initializer_list<T> value_type;
+
+        static inline SliceFormatter<Char,typename value_type::const_iterator>* make_formatter(const value_type& value) {
+            return new SliceFormatter<Char,typename value_type::const_iterator>(value.begin(), value.end());
+        }
+    };
 }
 
 #endif // FORMAT_TRAITS_H

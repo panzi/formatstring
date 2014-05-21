@@ -103,7 +103,7 @@ namespace formatstring {
 #endif
     // this way also derived classes from Example3 will be supported by this formatter
     template<typename Char, typename T>
-    struct format_traits<Char, T, typename std::enable_if<std::is_base_of<Example3<Char>, T>::value>::type> {
+    struct format_traits<Char, T, if_derives< T, Example3<Char> > > {
         typedef Char char_type;
         typedef T value_type;
 
@@ -210,6 +210,8 @@ int main() {
 
     void *vptr = intarr;
     std::cout << format(".{:_^20}.\n", vptr);
+
+    std::cout << format(".{:_^20}.\n", std::initializer_list<int>({-1, 0, 1}));
 
     std::cout << format("{} {}\n", FormatSpec("_^020") == FormatSpec("_^20"), FormatSpec(" =") != FormatSpec(""));
 
