@@ -37,6 +37,12 @@ struct Example3 {
     std::basic_string<Char> member;
 };
 
+template<typename Char>
+struct Example3Sub : public Example3<Char> {
+    Example3Sub(const std::basic_string<Char>& value) : Example3<Char>(value) {}
+    Example3Sub(const char* value) : Example3<Char>(value) {}
+};
+
 // most simple case, just an operator<< for ostream:
 std::ostream& operator << (std::ostream& out, const Example1& value) {
     return out << "<Example1 " << value.member << ">";
@@ -83,7 +89,8 @@ private:
 // You then need to register your formatter by specializing the format_traits template
 // class in the formatstring namespace like this:
 namespace formatstring {
-
+#if 0
+    // this way only variables of type Example3 are supported by this formatter (no derived classes)
     template<typename Char>
     struct format_traits< Char, Example3<Char> > {
         typedef Char char_type;
@@ -93,7 +100,17 @@ namespace formatstring {
             return new Example3Formatter<Char>(&value);
         }
     };
+#endif
+    // this way also derived classes from Example3 will be supported by this formatter
+    template<typename Char, typename T>
+    struct format_traits<Char, T, typename std::enable_if<std::is_base_of<Example3<Char>, T>::value>::type> {
+        typedef Char char_type;
+        typedef T value_type;
 
+        static inline Example3Formatter<Char>* make_formatter(const T& value) {
+            return new Example3Formatter<Char>(&value);
+        }
+    };
 }
 
 // string table to support all kinds of string types:
@@ -156,14 +173,15 @@ int main() {
 
     Example1 ex1("foo bar");
     Example2 ex2_char("char");
-    Example3<wchar_t> ex2_wchar(L"wchar_t");
+    Example3<wchar_t> ex3_wchar(L"wchar_t");
     Example2 *ptr = new Example2("ptr");
     std::shared_ptr<Example2> ptr2(new Example2("shared"));
     std::cout << format("{:_<20} {:_>20}", ex1, ex2_char) << repr(Example1("bla")) << '\n';
     std::cout << format("{}, {!r}, ptr: {!s}, *ptr: {}, shared_ptr: {}, *shared_ptr: {}\n",
                         Example2("blub"), Example2("bla\nbla"), ptr, *ptr, ptr2, *ptr2);
+    std::cout << format("subtype support: {}\n", Example3Sub<char>("Example3Sub"));
     std::cout.flush();
-    std::wcout << format(L"{}\n", ex2_wchar) << std::flush;
+    std::wcout << format(L"{}\n", ex3_wchar) << std::flush;
     delete ptr;
 
     std::cout << str(12) << ' ' << repr("foo bar") << ' ' << ch << '\n';

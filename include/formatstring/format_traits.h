@@ -8,10 +8,10 @@
 namespace formatstring {
 
     // ---- fallback ----
-    template<typename Char, typename T>
+    template<typename Char, typename T, typename ENABLE = void>
     struct format_traits;
 
-    template<typename Char, typename T>
+    template<typename Char, typename T, typename ENABLE>
     struct format_traits {
         typedef Char char_type;
         typedef T value_type;
