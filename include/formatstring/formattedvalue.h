@@ -8,6 +8,7 @@
 #include "formatstring/formatter.h"
 #include "formatstring/formatspec.h"
 #include "formatstring/formatvalue.h"
+#include "formatstring/format_traits.h"
 
 #include <sstream>
 

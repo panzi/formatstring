@@ -25,6 +25,7 @@ add_library(${FORMATSTRING_NAME} SHARED
 	../include/formatstring/formatitem.h
 	../include/formatstring/formatspec.h
 	../include/formatstring/formatter.h
+	../include/formatstring/format_traits_fwd.h
 	../include/formatstring/format_traits.h
 	../include/formatstring/formattedvalue.h
 	../include/formatstring/formatvalue.h

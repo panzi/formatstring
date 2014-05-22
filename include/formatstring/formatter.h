@@ -18,6 +18,7 @@
 #include "formatstring/formatvalue.h"
 #include "formatstring/conversion.h"
 #include "formatstring/formatspec.h"
+#include "formatstring/format_traits_fwd.h"
 
 namespace formatstring {
 
@@ -48,6 +49,17 @@ namespace formatstring {
 
     template<typename Char, typename Last>
     inline void unpack_formatters(BasicFormatters<Char>& formatters, const Last& last);
+
+    template<typename Char, typename First, typename... Rest>
+    inline void unpack_formatters(BasicFormatters<Char>& formatters, const First& first, const Rest&... rest) {
+        formatters.emplace_back(format_traits<Char,First>::make_formatter(first));
+        unpack_formatters<Char, Rest...>(formatters, rest...);
+    }
+
+    template<typename Char, typename Last>
+    inline void unpack_formatters(BasicFormatters<Char>& formatters, const Last& last) {
+        formatters.emplace_back(format_traits<Char,Last>::make_formatter(last));
+    }
 
     template<typename Char, typename T,
              void _format(std::basic_ostream<Char>& out, T value, const BasicFormatSpec<Char>& spec) = format_value,
@@ -134,21 +146,6 @@ namespace formatstring {
             }
         };
     }
-}
-
-// include is here because of circular dependency
-#include "formatstring/format_traits.h"
-
-// ==== unpack_formatters ====
-template<typename Char, typename First, typename... Rest>
-inline void formatstring::unpack_formatters(BasicFormatters<Char>& formatters, const First& first, const Rest&... rest) {
-    formatters.emplace_back(format_traits<Char,First>::make_formatter(first));
-    unpack_formatters<Char, Rest...>(formatters, rest...);
-}
-
-template<typename Char, typename Last>
-inline void formatstring::unpack_formatters(BasicFormatters<Char>& formatters, const Last& last) {
-    formatters.emplace_back(format_traits<Char,Last>::make_formatter(last));
 }
 
 #endif // FORMATSTRING_FORMATTER_H

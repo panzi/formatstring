@@ -4,6 +4,7 @@
 
 #include "formatstring/config.h"
 #include "formatstring/formatter.h"
+#include "formatstring/format_traits_fwd.h"
 
 #include <type_traits>
 
@@ -13,9 +14,6 @@ namespace formatstring {
     using if_derived = typename std::enable_if<std::is_base_of<Base, Derived>::value>::type;
 
     // ---- fallback ----
-    template<typename Char, typename T, typename ENABLE = void>
-    struct format_traits;
-
     template<typename Char, typename T, typename ENABLE>
     struct format_traits {
         typedef Char char_type;
