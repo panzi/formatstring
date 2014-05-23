@@ -46,6 +46,7 @@ namespace formatstring {
 
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, float  value);
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, double value);
+    template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, long double value);
 
     template<typename Char> void repr_value(std::basic_ostream<Char>& out, const std::basic_string<Char>& value);
     template<typename Char> void repr_value(std::basic_ostream<Char>& out, const Char* value);
@@ -99,6 +100,7 @@ namespace formatstring {
 
     template<typename Char> void format_value(std::basic_ostream<Char>& out, float  value, const BasicFormatSpec<Char>& spec);
     template<typename Char> void format_value(std::basic_ostream<Char>& out, double value, const BasicFormatSpec<Char>& spec);
+    template<typename Char> void format_value(std::basic_ostream<Char>& out, long double value, const BasicFormatSpec<Char>& spec);
 
     template<typename Char> void format_value(std::basic_ostream<Char>& out, const std::basic_string<Char>& str, const BasicFormatSpec<Char>& spec);
     template<typename Char> void format_value(std::basic_ostream<Char>& out, const Char* str, const BasicFormatSpec<Char>& spec);
@@ -165,6 +167,7 @@ namespace formatstring {
 
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, float  value, const BasicFormatSpec<Char>& spec) { format_float(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, double value, const BasicFormatSpec<Char>& spec) { format_float(out, value, spec); }
+    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, long double value, const BasicFormatSpec<Char>& spec) { format_float(out, value, spec); }
 
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, const std::basic_string<Char>& str, const BasicFormatSpec<Char>& spec) { format_string(out, str.c_str(), spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, const Char* str, const BasicFormatSpec<Char>& spec) { format_string(out, str, spec); }
@@ -198,6 +201,7 @@ namespace formatstring {
 
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, float  value) { out << value; }
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, double value) { out << value; }
+    template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, long double value) { out << value; }
 
     template<typename Char> void repr_value(std::basic_ostream<Char>& out, const std::basic_string<Char>& value) { repr_string(out, value.c_str()); }
     template<typename Char> void repr_value(std::basic_ostream<Char>& out, const Char* value) { repr_string(out, value); }
@@ -376,6 +380,9 @@ namespace formatstring {
     extern template FORMATSTRING_EXPORT void format_float<char,double>(std::ostream& out, double value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_float<wchar_t,double>(std::wostream& out, double value, const WFormatSpec& spec);
 
+    extern template FORMATSTRING_EXPORT void format_float<char,long double>(std::ostream& out, long double value, const FormatSpec& spec);
+    extern template FORMATSTRING_EXPORT void format_float<wchar_t,long double>(std::wostream& out, long double value, const WFormatSpec& spec);
+
     extern template FORMATSTRING_EXPORT void format_integer<char,char>(std::ostream& out, char value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char,short>(std::ostream& out, short value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char,int>(std::ostream& out, int value, const FormatSpec& spec);
@@ -414,6 +421,7 @@ namespace formatstring {
 
     extern template FORMATSTRING_EXPORT void format_float<char16_t,float>(std::basic_ostream<char16_t>& out, float value, const U16FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_float<char16_t,double>(std::basic_ostream<char16_t>& out, double value, const U16FormatSpec& spec);
+    extern template FORMATSTRING_EXPORT void format_float<char16_t,long double>(std::basic_ostream<char16_t>& out, long double value, const U16FormatSpec& spec);
 
     extern template FORMATSTRING_EXPORT void format_integer<char16_t,char16_t>(std::basic_ostream<char16_t>& out, char16_t value, const U16FormatSpec& spec);
 
@@ -442,6 +450,7 @@ namespace formatstring {
 
     extern template FORMATSTRING_EXPORT void format_float<char32_t,float>(std::basic_ostream<char32_t>& out, float value, const U32FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_float<char32_t,double>(std::basic_ostream<char32_t>& out, double value, const U32FormatSpec& spec);
+    extern template FORMATSTRING_EXPORT void format_float<char32_t,long double>(std::basic_ostream<char32_t>& out, long double value, const U32FormatSpec& spec);
 
     extern template FORMATSTRING_EXPORT void format_integer<char32_t,char32_t>(std::basic_ostream<char32_t>& out, char32_t value, const U32FormatSpec& spec);
 

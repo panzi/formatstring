@@ -563,6 +563,9 @@ template void format_float<wchar_t,float>(std::wostream& out, float value, const
 template void format_float<char,double>(std::ostream& out, double value, const FormatSpec& spec);
 template void format_float<wchar_t,double>(std::wostream& out, double value, const WFormatSpec& spec);
 
+template void format_float<char,long double>(std::ostream& out, long double value, const FormatSpec& spec);
+template void format_float<wchar_t,long double>(std::wostream& out, long double value, const WFormatSpec& spec);
+
 template void format_integer<char,char>(std::ostream& out, char value, const FormatSpec& spec);
 template void format_integer<char,short>(std::ostream& out, short value, const FormatSpec& spec);
 template void format_integer<char,int>(std::ostream& out, int value, const FormatSpec& spec);
@@ -604,6 +607,7 @@ template void format_string<char16_t>(std::basic_ostream<char16_t>& out, const c
 
 template void format_float<char16_t,float>(std::basic_ostream<char16_t>& out, float value, const U16FormatSpec& spec);
 template void format_float<char16_t,double>(std::basic_ostream<char16_t>& out, double value, const U16FormatSpec& spec);
+template void format_float<char16_t,long double>(std::basic_ostream<char16_t>& out, long double value, const U16FormatSpec& spec);
 
 template void format_integer<char16_t,char16_t>(std::basic_ostream<char16_t>& out, char16_t value, const U16FormatSpec& spec);
 
@@ -635,6 +639,7 @@ template void format_string<char32_t>(std::basic_ostream<char32_t>& out, const c
 
 template void format_float<char32_t,float>(std::basic_ostream<char32_t>& out, float value, const U32FormatSpec& spec);
 template void format_float<char32_t,double>(std::basic_ostream<char32_t>& out, double value, const U32FormatSpec& spec);
+template void format_float<char32_t,long double>(std::basic_ostream<char32_t>& out, long double value, const U32FormatSpec& spec);
 
 template void format_integer<char32_t,char32_t>(std::basic_ostream<char32_t>& out, char32_t value, const U32FormatSpec& spec);
 
