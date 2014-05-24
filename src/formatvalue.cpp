@@ -535,7 +535,7 @@ void formatstring::format_char(std::basic_ostream<Char>& out, Char value, const 
         format_string(out, str, strspec);
     }
     else {
-        format_integer(out, value, spec);
+        format_integer(out, (int)value, spec);
     }
 }
 
