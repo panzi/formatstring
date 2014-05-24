@@ -42,7 +42,7 @@ namespace formatstring {
         typedef char16_t value_type;
 
         static inline BasicFormatter<Char> make_formatter(char16_t value) {
-            return make_value_formatter<char16_t,char16_t,format_char,repr_char>(value);
+            return make_value_formatter<char16_t,char16_t,format_char<char16_t,char16_t>,repr_char<char16_t>>(value);
         }
     };
 #endif
@@ -55,7 +55,7 @@ namespace formatstring {
         typedef char32_t value_type;
 
         static inline BasicFormatter<Char> make_formatter(char32_t value) {
-            return make_value_formatter<char32_t,char32_t,format_char,repr_char>(value);
+            return make_value_formatter<char32_t,char32_t,format_char<char32_t,char32_t>,repr_char<char32_t>>(value);
         }
     };
 #endif
@@ -66,7 +66,7 @@ namespace formatstring {
         typedef wchar_t value_type;
 
         static inline BasicFormatter<wchar_t> make_formatter(wchar_t value) {
-            return make_value_formatter<wchar_t,wchar_t,format_char,repr_char>(value);
+            return make_value_formatter<wchar_t,wchar_t,format_char<wchar_t,wchar_t>,repr_char<wchar_t>>(value);
         }
     };
 
@@ -77,7 +77,17 @@ namespace formatstring {
         typedef char value_type;
 
         static inline BasicFormatter<Char> make_formatter(char value) {
-            return make_value_formatter<Char,char,format_char,repr_char>(value);
+            return make_value_formatter<Char,char,format_char<char,char>,repr_char<char>>(value);
+        }
+    };
+
+    template<typename Char>
+    struct format_traits<Char, signed char> {
+        typedef Char char_type;
+        typedef signed char value_type;
+
+        static inline BasicFormatter<Char> make_formatter(signed char value) {
+            return make_value_formatter<Char,signed char,format_char<char,signed char>,repr_int_char<char,signed char>>(value);
         }
     };
 
@@ -128,7 +138,7 @@ namespace formatstring {
         typedef unsigned char value_type;
 
         static inline BasicFormatter<Char> make_formatter(unsigned char value) {
-            return make_value_formatter<Char,unsigned char,format_integer>(value);
+            return make_value_formatter<Char,unsigned char,format_char<char,unsigned char>,repr_int_char<char,unsigned char>>(value);
         }
     };
 

@@ -223,6 +223,8 @@ int main() {
 
     std::cout << format("{} {}\n", FormatSpec("_^020") == FormatSpec("_^20"), FormatSpec(" =") != FormatSpec(""));
 
+    std::cout << format("{:d}\n", (char)-127);
+
     auto dbgfmt = debug_compile("debug: {} {!r}\n");
     Format emptyfmt = dbgfmt;
     std::cout << debug("debug: {:_^20}\n", "foo bar") << dbgfmt(12, 'A') << emptyfmt(12, 'A');

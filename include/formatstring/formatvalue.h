@@ -64,7 +64,8 @@ namespace formatstring {
     void repr_map(std::basic_ostream<Char>& out, Iter begin, Iter end, Char left = '{', Char right = '}');
 
     template<typename Char> void format_bool(std::basic_ostream<Char>& out, bool value, const BasicFormatSpec<Char>& spec);
-    template<typename Char> void format_char(std::basic_ostream<Char>& out, Char value, const BasicFormatSpec<Char>& spec);
+    template<typename Char> void format_int_char(std::basic_ostream<Char>& out, typename std::char_traits<Char>::int_type value, const BasicFormatSpec<Char>& spec);
+    template<typename Char, typename CharValue> void format_char(std::basic_ostream<Char>& out, CharValue value, const BasicFormatSpec<Char>& spec);
 
     template<typename Char, typename Int, typename UInt = typename std::make_unsigned<Int>::type>
     void format_integer(std::basic_ostream<Char>& out, Int value, const BasicFormatSpec<Char>& spec);
@@ -134,32 +135,44 @@ namespace formatstring {
     template<typename Char>
     void repr_char(std::basic_ostream<Char>& out, Char value);
 
+    template<typename Char, typename CharValue>
+    void repr_int_char(std::basic_ostream<Char>& out, CharValue value);
+
     template<typename Char>
     void repr_string(std::basic_ostream<Char>& out, const Char* value);
 
     // ---- format_value impl ----
+    template<typename Char, typename CharValue>
+    inline void format_char(std::basic_ostream<Char>& out, CharValue value, const BasicFormatSpec<Char>& spec) {
+        format_int_char<Char>(out, value, spec);
+    }
+
+    template<typename Char, typename CharValue>
+    inline void repr_int_char(std::basic_ostream<Char>& out, CharValue value) { repr_char(out, (Char)value); }
+
     template<typename Char>
     inline void format_value(std::basic_ostream<Char>& out, bool value, const BasicFormatSpec<Char>& spec) { format_bool(out, value, spec); }
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    inline void format_value(std::basic_ostream<char16_t>& out, char16_t value, const U16FormatSpec& spec) { format_char(out, value, spec); }
+    inline void format_value(std::basic_ostream<char16_t>& out, char16_t value, const U16FormatSpec& spec) { format_int_char<char16_t>(out, value, spec); }
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    inline void format_value(std::basic_ostream<char32_t>& out, char32_t value, const U32FormatSpec& spec) { format_char(out, value, spec); }
+    inline void format_value(std::basic_ostream<char32_t>& out, char32_t value, const U32FormatSpec& spec) { format_int_char<char32_t>(out, value, spec); }
 #endif
 
-    inline void format_value(std::wostream& out, wchar_t value, const WFormatSpec& spec) { format_char(out, value, spec); }
+    inline void format_value(std::wostream& out, wchar_t value, const WFormatSpec& spec) { format_int_char<wchar_t>(out, value, spec); }
 
-    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, Char value, const BasicFormatSpec<Char>& spec) { format_char(out, value, spec); }
+    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, Char value, const BasicFormatSpec<Char>& spec) { format_int_char<Char>(out, value, spec); }
 
-    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, char      value, const BasicFormatSpec<Char>& spec) { format_char(out, (Char)value, spec); }
+    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, char      value, const BasicFormatSpec<Char>& spec) { format_int_char<char>(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, short     value, const BasicFormatSpec<Char>& spec) { format_integer(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, int       value, const BasicFormatSpec<Char>& spec) { format_integer(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, long      value, const BasicFormatSpec<Char>& spec) { format_integer(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, long long value, const BasicFormatSpec<Char>& spec) { format_integer(out, value, spec); }
 
-    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, unsigned char      value, const BasicFormatSpec<Char>& spec) { format_char(out, (Char)value, spec); }
+    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, signed char        value, const BasicFormatSpec<Char>& spec) { format_int_char<char>(out, value, spec); }
+    template<typename Char> inline void format_value(std::basic_ostream<Char>& out, unsigned char      value, const BasicFormatSpec<Char>& spec) { format_int_char<char>(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, unsigned short     value, const BasicFormatSpec<Char>& spec) { format_integer(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, unsigned int       value, const BasicFormatSpec<Char>& spec) { format_integer(out, value, spec); }
     template<typename Char> inline void format_value(std::basic_ostream<Char>& out, unsigned long      value, const BasicFormatSpec<Char>& spec) { format_integer(out, value, spec); }
@@ -193,6 +206,7 @@ namespace formatstring {
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, long      value) { out << value; }
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, long long value) { out << value; }
 
+    template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, signed char        value) { repr_char(out, (Char)value); }
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, unsigned char      value) { repr_char(out, (Char)value); }
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, unsigned short     value) { out << value; }
     template<typename Char> inline void repr_value(std::basic_ostream<Char>& out, unsigned int       value) { out << value; }
@@ -368,8 +382,8 @@ namespace formatstring {
     extern template FORMATSTRING_EXPORT void format_bool<char>(std::ostream& out, bool value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_bool<wchar_t>(std::wostream& out, bool value, const WFormatSpec& spec);
 
-    extern template FORMATSTRING_EXPORT void format_char<char>(std::ostream& out, char value, const FormatSpec& spec);
-    extern template FORMATSTRING_EXPORT void format_char<wchar_t>(std::wostream& out, wchar_t value, const WFormatSpec& spec);
+    extern template FORMATSTRING_EXPORT void format_int_char<char>(std::ostream& out, std::char_traits<char>::int_type value, const FormatSpec& spec);
+    extern template FORMATSTRING_EXPORT void format_int_char<wchar_t>(std::wostream& out, std::char_traits<wchar_t>::int_type value, const WFormatSpec& spec);
 
     extern template FORMATSTRING_EXPORT void format_string<char>(std::ostream& out, const char value[], const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_string<wchar_t>(std::wostream& out, const wchar_t value[], const WFormatSpec& spec);
@@ -389,6 +403,7 @@ namespace formatstring {
     extern template FORMATSTRING_EXPORT void format_integer<char,long>(std::ostream& out, long value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char,long long>(std::ostream& out, long long value, const FormatSpec& spec);
 
+    extern template FORMATSTRING_EXPORT void format_integer<char,signed char>(std::ostream& out, signed char value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char,unsigned char>(std::ostream& out, unsigned char value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char,unsigned short>(std::ostream& out, unsigned short value, const FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char,unsigned int>(std::ostream& out, unsigned int value, const FormatSpec& spec);
@@ -403,6 +418,7 @@ namespace formatstring {
     extern template FORMATSTRING_EXPORT void format_integer<wchar_t,long>(std::wostream& out, long value, const WFormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<wchar_t,long long>(std::wostream& out, long long value, const WFormatSpec& spec);
 
+    extern template FORMATSTRING_EXPORT void format_integer<wchar_t,signed char>(std::wostream& out, signed char value, const WFormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<wchar_t,unsigned char>(std::wostream& out, unsigned char value, const WFormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<wchar_t,unsigned short>(std::wostream& out, unsigned short value, const WFormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<wchar_t,unsigned int>(std::wostream& out, unsigned int value, const WFormatSpec& spec);
@@ -416,7 +432,7 @@ namespace formatstring {
 
     extern template FORMATSTRING_EXPORT void format_bool<char16_t>(std::basic_stream<char16_t>& out, bool value, const U16FormatSpec& spec);
 
-    extern template FORMATSTRING_EXPORT void format_char<char16_t>(std::basic_ostream<char16_t>& out, char16_t value, const U16FormatSpec& spec);
+    extern template FORMATSTRING_EXPORT void format_int_char<char16_t>(std::basic_ostream<char16_t>& out, std::char_traits<char16_t>::int_type value, const U16FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_string<char16_t>(std::basic_ostream<char16_t>& out, const char16_t value[], const U16FormatSpec& spec);
 
     extern template FORMATSTRING_EXPORT void format_float<char16_t,float>(std::basic_ostream<char16_t>& out, float value, const U16FormatSpec& spec);
@@ -431,6 +447,7 @@ namespace formatstring {
     extern template FORMATSTRING_EXPORT void format_integer<char16_t,long>(std::basic_ostream<char16_t>& out, long value, const U16FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char16_t,long long>(std::basic_ostream<char16_t>& out, long long value, const U16FormatSpec& spec);
 
+    extern template FORMATSTRING_EXPORT void format_integer<char16_t,signed char>(std::basic_ostream<char16_t>& out, signed char value, const U16FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char16_t,unsigned char>(std::basic_ostream<char16_t>& out, unsigned char value, const U16FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char16_t,unsigned short>(std::basic_ostream<char16_t>& out, unsigned short value, const U16FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char16_t,unsigned int>(std::basic_ostream<char16_t>& out, unsigned int value, const U16FormatSpec& spec);
@@ -445,7 +462,7 @@ namespace formatstring {
 
     extern template FORMATSTRING_EXPORT void format_bool<char32_t>(std::basic_stream<char32_t>& out, bool value, const U32FormatSpec& spec);
 
-    extern template FORMATSTRING_EXPORT void format_char<char32_t>(std::basic_ostream<char32_t>& out, char32_t value, const U32FormatSpec& spec);
+    extern template FORMATSTRING_EXPORT void format_int_char<char32_t>(std::basic_ostream<char32_t>& out, std::char_traits<char32_t>::int_type value, const U32FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_string<char32_t>(std::basic_ostream<char32_t>& out, const char32_t value[], const U32FormatSpec& spec);
 
     extern template FORMATSTRING_EXPORT void format_float<char32_t,float>(std::basic_ostream<char32_t>& out, float value, const U32FormatSpec& spec);
@@ -460,6 +477,7 @@ namespace formatstring {
     extern template FORMATSTRING_EXPORT void format_integer<char32_t,long>(std::basic_ostream<char32_t>& out, long value, const U32FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char32_t,long long>(std::basic_ostream<char32_t>& out, long long value, const U32FormatSpec& spec);
 
+    extern template FORMATSTRING_EXPORT void format_integer<char32_t,signed char>(std::basic_ostream<char32_t>& out, signed char value, const U32FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char32_t,unsigned char>(std::basic_ostream<char32_t>& out, unsigned char value, const U32FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char32_t,unsigned short>(std::basic_ostream<char32_t>& out, unsigned short value, const U32FormatSpec& spec);
     extern template FORMATSTRING_EXPORT void format_integer<char32_t,unsigned int>(std::basic_ostream<char32_t>& out, unsigned int value, const U32FormatSpec& spec);

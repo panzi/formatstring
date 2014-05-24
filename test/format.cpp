@@ -10,6 +10,58 @@
 
 using namespace formatstring;
 
+class Character {
+public:
+    inline Character() : value(0) {}
+    inline Character(char value) : value(value) {}
+    inline Character(const Character& other) = default;
+    inline Character(Character&& other) = default;
+
+    inline Character& operator=(const Character& other) = default;
+
+    inline Character& operator=(char value) {
+        this->value = value;
+        return *this;
+    }
+
+    inline operator char () const {
+        return value;
+    }
+
+    inline operator int () const {
+        return value;
+    }
+
+private:
+    char value;
+};
+
+class UCharacter {
+public:
+    inline UCharacter() : value(0) {}
+    inline UCharacter(unsigned char value) : value(value) {}
+    inline UCharacter(const UCharacter& other) = default;
+    inline UCharacter(UCharacter&& other) = default;
+
+    inline UCharacter& operator=(const UCharacter& other) = default;
+
+    inline UCharacter& operator=(unsigned char value) {
+        this->value = value;
+        return *this;
+    }
+
+    inline operator unsigned char () const {
+        return value;
+    }
+
+    inline operator int () const {
+        return value;
+    }
+
+private:
+    unsigned char value;
+};
+
 template<typename T>
 T lexical_cast(const char* str) {
     std::istringstream ss(str);
@@ -22,27 +74,51 @@ T lexical_cast(const char* str) {
 }
 
 template<>
-unsigned char lexical_cast(const char* str) {
-    if (std::strlen(str) != 1) {
+std::int8_t lexical_cast(const char* str) {
+    std::istringstream ss(str);
+    int val = 0;
+    ss >> val;
+    if (ss.fail() || !ss.eof() || val < -128 || val > 127) {
         throw std::invalid_argument(str);
     }
-    return (unsigned char)str[0];
+    return val;
 }
 
 template<>
-char lexical_cast(const char* str) {
-    if (std::strlen(str) != 1) {
+std::uint8_t lexical_cast(const char* str) {
+    std::istringstream ss(str);
+    unsigned int val = 0;
+    ss >> val;
+    if (ss.fail() || !ss.eof() || val > 255) {
+        throw std::invalid_argument(str);
+    }
+    return val;
+}
+
+template<>
+Character lexical_cast(const char* str) {
+    if (std::strlen(str) > 1) {
         throw std::invalid_argument(str);
     }
     return str[0];
 }
 
 template<>
+UCharacter lexical_cast(const char* str) {
+    if (std::strlen(str) > 1) {
+        throw std::invalid_argument(str);
+    }
+    return (unsigned char)str[0];
+}
+
+template<>
 bool lexical_cast(const char* str) {
-    if (std::strcmp(str, "true") == 0) {
+    std::string val = str;
+    std::transform(val.begin(), val.end(), val.begin(), [](char ch) { return std::tolower(ch); });
+    if (val == "true" || val == "1" || val == "t" || val == "on" || val == "yes") {
         return true;
     }
-    else if (std::strcmp(str, "true") == 0) {
+    else if (val == "false" || val == "0" || val == "f" || val == "off" || val == "no") {
         return false;
     }
     else {
@@ -165,9 +241,9 @@ ValueType parse_value_type(const std::string& type) {
     }
 }
 
-template<typename T>
+template<typename ParseType, typename UseType = ParseType>
 void do_format_value(const char* fmt, const char* value) {
-    std::cout << format(fmt, lexical_cast<T>(value));
+    std::cout << format(fmt, (UseType)lexical_cast<ParseType>(value));
 }
 
 template<typename Collection, typename T>
@@ -200,22 +276,22 @@ void do_format_map(const char* fmt, std::size_t argc, const char* argv[]) {
     std::cout << format(fmt, values);
 }
 
-template<typename First, typename Second>
+template<typename ParseFirst, typename ParseSecond, typename First = ParseFirst, typename Second = ParseSecond>
 void do_format_pair(const char* fmt, std::size_t argc, const char* argv[]) {
     if (argc != 2) {
         throw std::range_error("illegal number of arguments");
     }
-    First  a = lexical_cast<First>(argv[0]);
-    Second b = lexical_cast<Second>(argv[1]);
+    First  a = lexical_cast<ParseFirst>(argv[0]);
+    Second b = lexical_cast<ParseSecond>(argv[1]);
     std::cout << format(fmt, std::make_pair<First,Second>(a, b));
 }
 
-template<typename T>
+template<typename ParseType, typename UseType = ParseType>
 void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
-    T* array = new T[argc];
+    UseType* array = new UseType[argc];
     try {
         for (std::size_t i = 0; i < argc; ++ i) {
-            array[i] = lexical_cast<T>(argv[i]);
+            array[i] = lexical_cast<ParseType>(argv[i]);
         }
         std::cout << format(fmt, slice(array, array + argc));
         delete[] array;
@@ -233,12 +309,12 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
     } \
     switch (parse_value_type((PARAMS)[0])) { \
     case Bool:       FUNC<COLLECTION_TYPE<bool>, bool>((FMT), (ARGC), (ARGV)); break; \
-    case Char:       FUNC<COLLECTION_TYPE<char>, char>((FMT), (ARGC), (ARGV)); break; \
+    case Char:       FUNC<COLLECTION_TYPE<char>, Character>((FMT), (ARGC), (ARGV)); break; \
     case Short:      FUNC<COLLECTION_TYPE<short>, short>((FMT), (ARGC), (ARGV)); break; \
     case Int:        FUNC<COLLECTION_TYPE<int>, int>((FMT), (ARGC), (ARGV)); break; \
     case Long:       FUNC<COLLECTION_TYPE<long>, long>((FMT), (ARGC), (ARGV)); break; \
     case LongLong:   FUNC<COLLECTION_TYPE<long long>, long long>((FMT), (ARGC), (ARGV)); break; \
-    case UChar:      FUNC<COLLECTION_TYPE<unsigned char>, unsigned char>((FMT), (ARGC), (ARGV)); break; \
+    case UChar:      FUNC<COLLECTION_TYPE<unsigned char>, UCharacter>((FMT), (ARGC), (ARGV)); break; \
     case UShort:     FUNC<COLLECTION_TYPE<unsigned short>, unsigned short>((FMT), (ARGC), (ARGV)); break; \
     case UInt:       FUNC<COLLECTION_TYPE<unsigned int>, unsigned int>((FMT), (ARGC), (ARGV)); break; \
     case ULong:      FUNC<COLLECTION_TYPE<unsigned long>, unsigned long>((FMT), (ARGC), (ARGV)); break; \
@@ -255,33 +331,35 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
     case UInt32:     FUNC<COLLECTION_TYPE<std::uint32_t>, std::uint32_t>((FMT), (ARGC), (ARGV)); break; \
     case UInt64:     FUNC<COLLECTION_TYPE<std::uint64_t>, std::uint64_t>((FMT), (ARGC), (ARGV)); break; \
     case String:     FUNC<COLLECTION_TYPE<std::string>, std::string>((FMT), (ARGC), (ARGV)); break; \
+    default: throw std::runtime_error("unhandeled type"); \
     }
 
-#define _DO_FORMAT_MAP(MAP_TYPE,KEY_TYPE,PARAMS,FMT,ARGC,ARGV) \
+#define _DO_FORMAT_MAP(MAP_TYPE,KEY_PARSE,KEY_TYPE,PARAMS,FMT,ARGC,ARGV) \
     switch (parse_value_type((PARAMS)[1])) { \
-    case Bool:       do_format_map<MAP_TYPE<KEY_TYPE, bool>, KEY_TYPE, bool>((FMT), (ARGC), (ARGV)); break; \
-    case Char:       do_format_map<MAP_TYPE<KEY_TYPE, char>, KEY_TYPE, char>((FMT), (ARGC), (ARGV)); break; \
-    case Short:      do_format_map<MAP_TYPE<KEY_TYPE, short>, KEY_TYPE, short>((FMT), (ARGC), (ARGV)); break; \
-    case Int:        do_format_map<MAP_TYPE<KEY_TYPE, int>, KEY_TYPE, int>((FMT), (ARGC), (ARGV)); break; \
-    case Long:       do_format_map<MAP_TYPE<KEY_TYPE, long>, KEY_TYPE, long>((FMT), (ARGC), (ARGV)); break; \
-    case LongLong:   do_format_map<MAP_TYPE<KEY_TYPE, long long>, KEY_TYPE, long long>((FMT), (ARGC), (ARGV)); break; \
-    case UChar:      do_format_map<MAP_TYPE<KEY_TYPE, unsigned char>, KEY_TYPE, unsigned char>((FMT), (ARGC), (ARGV)); break; \
-    case UShort:     do_format_map<MAP_TYPE<KEY_TYPE, unsigned short>, KEY_TYPE, unsigned short>((FMT), (ARGC), (ARGV)); break; \
-    case UInt:       do_format_map<MAP_TYPE<KEY_TYPE, unsigned int>, KEY_TYPE, unsigned int>((FMT), (ARGC), (ARGV)); break; \
-    case ULong:      do_format_map<MAP_TYPE<KEY_TYPE, unsigned long>, KEY_TYPE, unsigned long>((FMT), (ARGC), (ARGV)); break; \
-    case ULongLong:  do_format_map<MAP_TYPE<KEY_TYPE, unsigned long long>, KEY_TYPE, unsigned long long>((FMT), (ARGC), (ARGV)); break; \
-    case Float:      do_format_map<MAP_TYPE<KEY_TYPE, float>, KEY_TYPE, float>((FMT), (ARGC), (ARGV)); break; \
-    case Double:     do_format_map<MAP_TYPE<KEY_TYPE, double>, KEY_TYPE, double>((FMT), (ARGC), (ARGV)); break; \
-    case LongDouble: do_format_map<MAP_TYPE<KEY_TYPE, long double>, KEY_TYPE, long double>((FMT), (ARGC), (ARGV)); break; \
-    case Int8:       do_format_map<MAP_TYPE<KEY_TYPE, std::int8_t>, KEY_TYPE, std::int8_t>((FMT), (ARGC), (ARGV)); break; \
-    case Int16:      do_format_map<MAP_TYPE<KEY_TYPE, std::int16_t>, KEY_TYPE, std::int16_t>((FMT), (ARGC), (ARGV)); break; \
-    case Int32:      do_format_map<MAP_TYPE<KEY_TYPE, std::int32_t>, KEY_TYPE, std::int32_t>((FMT), (ARGC), (ARGV)); break; \
-    case Int64:      do_format_map<MAP_TYPE<KEY_TYPE, std::int64_t>, KEY_TYPE, std::int64_t>((FMT), (ARGC), (ARGV)); break; \
-    case UInt8:      do_format_map<MAP_TYPE<KEY_TYPE, std::uint8_t>, KEY_TYPE, std::uint8_t>((FMT), (ARGC), (ARGV)); break; \
-    case UInt16:     do_format_map<MAP_TYPE<KEY_TYPE, std::uint16_t>, KEY_TYPE, std::uint16_t>((FMT), (ARGC), (ARGV)); break; \
-    case UInt32:     do_format_map<MAP_TYPE<KEY_TYPE, std::uint32_t>, KEY_TYPE, std::uint32_t>((FMT), (ARGC), (ARGV)); break; \
-    case UInt64:     do_format_map<MAP_TYPE<KEY_TYPE, std::uint64_t>, KEY_TYPE, std::uint64_t>((FMT), (ARGC), (ARGV)); break; \
-    case String:     do_format_map<MAP_TYPE<KEY_TYPE, std::string>, KEY_TYPE, std::string>((FMT), (ARGC), (ARGV)); break; \
+    case Bool:       do_format_map<MAP_TYPE<KEY_TYPE, bool>, KEY_PARSE, bool>((FMT), (ARGC), (ARGV)); break; \
+    case Char:       do_format_map<MAP_TYPE<KEY_TYPE, char>, KEY_PARSE, Character>((FMT), (ARGC), (ARGV)); break; \
+    case Short:      do_format_map<MAP_TYPE<KEY_TYPE, short>, KEY_PARSE, short>((FMT), (ARGC), (ARGV)); break; \
+    case Int:        do_format_map<MAP_TYPE<KEY_TYPE, int>, KEY_PARSE, int>((FMT), (ARGC), (ARGV)); break; \
+    case Long:       do_format_map<MAP_TYPE<KEY_TYPE, long>, KEY_PARSE, long>((FMT), (ARGC), (ARGV)); break; \
+    case LongLong:   do_format_map<MAP_TYPE<KEY_TYPE, long long>, KEY_PARSE, long long>((FMT), (ARGC), (ARGV)); break; \
+    case UChar:      do_format_map<MAP_TYPE<KEY_TYPE, unsigned char>, KEY_PARSE, UCharacter>((FMT), (ARGC), (ARGV)); break; \
+    case UShort:     do_format_map<MAP_TYPE<KEY_TYPE, unsigned short>, KEY_PARSE, unsigned short>((FMT), (ARGC), (ARGV)); break; \
+    case UInt:       do_format_map<MAP_TYPE<KEY_TYPE, unsigned int>, KEY_PARSE, unsigned int>((FMT), (ARGC), (ARGV)); break; \
+    case ULong:      do_format_map<MAP_TYPE<KEY_TYPE, unsigned long>, KEY_PARSE, unsigned long>((FMT), (ARGC), (ARGV)); break; \
+    case ULongLong:  do_format_map<MAP_TYPE<KEY_TYPE, unsigned long long>, KEY_PARSE, unsigned long long>((FMT), (ARGC), (ARGV)); break; \
+    case Float:      do_format_map<MAP_TYPE<KEY_TYPE, float>, KEY_PARSE, float>((FMT), (ARGC), (ARGV)); break; \
+    case Double:     do_format_map<MAP_TYPE<KEY_TYPE, double>, KEY_PARSE, double>((FMT), (ARGC), (ARGV)); break; \
+    case LongDouble: do_format_map<MAP_TYPE<KEY_TYPE, long double>, KEY_PARSE, long double>((FMT), (ARGC), (ARGV)); break; \
+    case Int8:       do_format_map<MAP_TYPE<KEY_TYPE, std::int8_t>, KEY_PARSE, std::int8_t>((FMT), (ARGC), (ARGV)); break; \
+    case Int16:      do_format_map<MAP_TYPE<KEY_TYPE, std::int16_t>, KEY_PARSE, std::int16_t>((FMT), (ARGC), (ARGV)); break; \
+    case Int32:      do_format_map<MAP_TYPE<KEY_TYPE, std::int32_t>, KEY_PARSE, std::int32_t>((FMT), (ARGC), (ARGV)); break; \
+    case Int64:      do_format_map<MAP_TYPE<KEY_TYPE, std::int64_t>, KEY_PARSE, std::int64_t>((FMT), (ARGC), (ARGV)); break; \
+    case UInt8:      do_format_map<MAP_TYPE<KEY_TYPE, std::uint8_t>, KEY_PARSE, std::uint8_t>((FMT), (ARGC), (ARGV)); break; \
+    case UInt16:     do_format_map<MAP_TYPE<KEY_TYPE, std::uint16_t>, KEY_PARSE, std::uint16_t>((FMT), (ARGC), (ARGV)); break; \
+    case UInt32:     do_format_map<MAP_TYPE<KEY_TYPE, std::uint32_t>, KEY_PARSE, std::uint32_t>((FMT), (ARGC), (ARGV)); break; \
+    case UInt64:     do_format_map<MAP_TYPE<KEY_TYPE, std::uint64_t>, KEY_PARSE, std::uint64_t>((FMT), (ARGC), (ARGV)); break; \
+    case String:     do_format_map<MAP_TYPE<KEY_TYPE, std::string>, KEY_PARSE, std::string>((FMT), (ARGC), (ARGV)); break; \
+    default: throw std::runtime_error("unhandeled type"); \
     }
 
 #define DO_FORMAT_MAP(MAP_TYPE,PARAMS,FMT,ARGC,ARGV) \
@@ -289,56 +367,58 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
         throw std::range_error("illegal number of type parameters"); \
     } \
     switch (parse_value_type((PARAMS)[0])) { \
-    case Bool:       _DO_FORMAT_MAP(MAP_TYPE,bool,PARAMS,FMT,ARGC,ARGV); break; \
-    case Char:       _DO_FORMAT_MAP(MAP_TYPE,char,PARAMS,FMT,ARGC,ARGV); break; \
-    case Short:      _DO_FORMAT_MAP(MAP_TYPE,short,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int:        _DO_FORMAT_MAP(MAP_TYPE,int,PARAMS,FMT,ARGC,ARGV); break; \
-    case Long:       _DO_FORMAT_MAP(MAP_TYPE,long,PARAMS,FMT,ARGC,ARGV); break; \
-    case LongLong:   _DO_FORMAT_MAP(MAP_TYPE,long long,PARAMS,FMT,ARGC,ARGV); break; \
-    case UChar:      _DO_FORMAT_MAP(MAP_TYPE,unsigned char,PARAMS,FMT,ARGC,ARGV); break; \
-    case UShort:     _DO_FORMAT_MAP(MAP_TYPE,unsigned short,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt:       _DO_FORMAT_MAP(MAP_TYPE,unsigned int,PARAMS,FMT,ARGC,ARGV); break; \
-    case ULong:      _DO_FORMAT_MAP(MAP_TYPE,unsigned long,PARAMS,FMT,ARGC,ARGV); break; \
-    case ULongLong:  _DO_FORMAT_MAP(MAP_TYPE,unsigned long long,PARAMS,FMT,ARGC,ARGV); break; \
-    case Float:      _DO_FORMAT_MAP(MAP_TYPE,float,PARAMS,FMT,ARGC,ARGV); break; \
-    case Double:     _DO_FORMAT_MAP(MAP_TYPE,double,PARAMS,FMT,ARGC,ARGV); break; \
-    case LongDouble: _DO_FORMAT_MAP(MAP_TYPE,long double,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int8:       _DO_FORMAT_MAP(MAP_TYPE,std::int8_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int16:      _DO_FORMAT_MAP(MAP_TYPE,std::int16_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int32:      _DO_FORMAT_MAP(MAP_TYPE,std::int32_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int64:      _DO_FORMAT_MAP(MAP_TYPE,std::int64_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt8:      _DO_FORMAT_MAP(MAP_TYPE,std::uint8_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt16:     _DO_FORMAT_MAP(MAP_TYPE,std::uint16_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt32:     _DO_FORMAT_MAP(MAP_TYPE,std::uint32_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt64:     _DO_FORMAT_MAP(MAP_TYPE,std::uint64_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case String:     _DO_FORMAT_MAP(MAP_TYPE,std::string,PARAMS,FMT,ARGC,ARGV); break; \
+    case Bool:       _DO_FORMAT_MAP(MAP_TYPE,bool,bool,PARAMS,FMT,ARGC,ARGV); break; \
+    case Char:       _DO_FORMAT_MAP(MAP_TYPE,Character,char,PARAMS,FMT,ARGC,ARGV); break; \
+    case Short:      _DO_FORMAT_MAP(MAP_TYPE,short,short,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int:        _DO_FORMAT_MAP(MAP_TYPE,int,int,PARAMS,FMT,ARGC,ARGV); break; \
+    case Long:       _DO_FORMAT_MAP(MAP_TYPE,long,long,PARAMS,FMT,ARGC,ARGV); break; \
+    case LongLong:   _DO_FORMAT_MAP(MAP_TYPE,long long,long long,PARAMS,FMT,ARGC,ARGV); break; \
+    case UChar:      _DO_FORMAT_MAP(MAP_TYPE,UCharacter,unsigned char,PARAMS,FMT,ARGC,ARGV); break; \
+    case UShort:     _DO_FORMAT_MAP(MAP_TYPE,unsigned short,unsigned short,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt:       _DO_FORMAT_MAP(MAP_TYPE,unsigned int,unsigned int,PARAMS,FMT,ARGC,ARGV); break; \
+    case ULong:      _DO_FORMAT_MAP(MAP_TYPE,unsigned long,unsigned long,PARAMS,FMT,ARGC,ARGV); break; \
+    case ULongLong:  _DO_FORMAT_MAP(MAP_TYPE,unsigned long long,unsigned long long,PARAMS,FMT,ARGC,ARGV); break; \
+    case Float:      _DO_FORMAT_MAP(MAP_TYPE,float,float,PARAMS,FMT,ARGC,ARGV); break; \
+    case Double:     _DO_FORMAT_MAP(MAP_TYPE,double,double,PARAMS,FMT,ARGC,ARGV); break; \
+    case LongDouble: _DO_FORMAT_MAP(MAP_TYPE,long double,long double,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int8:       _DO_FORMAT_MAP(MAP_TYPE,std::int8_t,std::int8_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int16:      _DO_FORMAT_MAP(MAP_TYPE,std::int16_t,std::int16_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int32:      _DO_FORMAT_MAP(MAP_TYPE,std::int32_t,std::int32_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int64:      _DO_FORMAT_MAP(MAP_TYPE,std::int64_t,std::int64_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt8:      _DO_FORMAT_MAP(MAP_TYPE,std::uint8_t,std::uint8_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt16:     _DO_FORMAT_MAP(MAP_TYPE,std::uint16_t,std::uint16_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt32:     _DO_FORMAT_MAP(MAP_TYPE,std::uint32_t,std::uint32_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt64:     _DO_FORMAT_MAP(MAP_TYPE,std::uint64_t,std::uint64_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case String:     _DO_FORMAT_MAP(MAP_TYPE,std::string,std::string,PARAMS,FMT,ARGC,ARGV); break; \
+    default: throw std::runtime_error("unhandeled type"); \
     }
 
-#define _DO_FORMAT_PAIR(FIRST_TYPE,PARAMS,FMT,ARGC,ARGV) \
+#define _DO_FORMAT_PAIR(FIRST_PARSE,FIRST_TYPE,PARAMS,FMT,ARGC,ARGV) \
     switch (parse_value_type((PARAMS)[1])) { \
-    case Bool:       do_format_pair<FIRST_TYPE,bool>(FMT,ARGC,ARGV); break; \
-    case Char:       do_format_pair<FIRST_TYPE,char>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Short:      do_format_pair<FIRST_TYPE,short>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Int:        do_format_pair<FIRST_TYPE,int>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Long:       do_format_pair<FIRST_TYPE,long>(PARAMS,FMT,ARGC,ARGV); break; \
-    case LongLong:   do_format_pair<FIRST_TYPE,long long>(PARAMS,FMT,ARGC,ARGV); break; \
-    case UChar:      do_format_pair<FIRST_TYPE,unsigned char>(PARAMS,FMT,ARGC,ARGV); break; \
-    case UShort:     do_format_pair<FIRST_TYPE,unsigned short>(PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt:       do_format_pair<FIRST_TYPE,unsigned int>(PARAMS,FMT,ARGC,ARGV); break; \
-    case ULong:      do_format_pair<FIRST_TYPE,unsigned long>(PARAMS,FMT,ARGC,ARGV); break; \
-    case ULongLong:  do_format_pair<FIRST_TYPE,unsigned long long>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Float:      do_format_pair<FIRST_TYPE,float>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Double:     do_format_pair<FIRST_TYPE,double>(PARAMS,FMT,ARGC,ARGV); break; \
-    case LongDouble: do_format_pair<FIRST_TYPE,long double>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Int8:       do_format_pair<FIRST_TYPE,std::int8_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Int16:      do_format_pair<FIRST_TYPE,std::int16_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Int32:      do_format_pair<FIRST_TYPE,std::int32_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case Int64:      do_format_pair<FIRST_TYPE,std::int64_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt8:      do_format_pair<FIRST_TYPE,std::uint8_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt16:     do_format_pair<FIRST_TYPE,std::uint16_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt32:     do_format_pair<FIRST_TYPE,std::uint32_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt64:     do_format_pair<FIRST_TYPE,std::uint64_t>(PARAMS,FMT,ARGC,ARGV); break; \
-    case String:     do_format_pair<FIRST_TYPE,std::string>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Bool:       do_format_pair<FIRST_PARSE,bool,FIRST_TYPE>(FMT,ARGC,ARGV); break; \
+    case Char:       do_format_pair<FIRST_PARSE,Character,FIRST_TYPE,char>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Short:      do_format_pair<FIRST_PARSE,short,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Int:        do_format_pair<FIRST_PARSE,int,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Long:       do_format_pair<FIRST_PARSE,long,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case LongLong:   do_format_pair<FIRST_PARSE,long long,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case UChar:      do_format_pair<FIRST_PARSE,UCharacter,FIRST_TYPE,unsigned char>(PARAMS,FMT,ARGC,ARGV); break; \
+    case UShort:     do_format_pair<FIRST_PARSE,unsigned short,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt:       do_format_pair<FIRST_PARSE,unsigned int,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case ULong:      do_format_pair<FIRST_PARSE,unsigned long,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case ULongLong:  do_format_pair<FIRST_PARSE,unsigned long long,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Float:      do_format_pair<FIRST_PARSE,float,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Double:     do_format_pair<FIRST_PARSE,double,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case LongDouble: do_format_pair<FIRST_PARSE,long double,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Int8:       do_format_pair<FIRST_PARSE,std::int8_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Int16:      do_format_pair<FIRST_PARSE,std::int16_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Int32:      do_format_pair<FIRST_PARSE,std::int32_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case Int64:      do_format_pair<FIRST_PARSE,std::int64_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt8:      do_format_pair<FIRST_PARSE,std::uint8_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt16:     do_format_pair<FIRST_PARSE,std::uint16_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt32:     do_format_pair<FIRST_PARSE,std::uint32_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt64:     do_format_pair<FIRST_PARSE,std::uint64_t,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case String:     do_format_pair<FIRST_PARSE,std::string,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    default: throw std::runtime_error("unhandeled type"); \
     }
 
 #define DO_FORMAT_PAIR(PARAMS,FMT,ARGC,ARGV) \
@@ -346,29 +426,30 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
         throw std::range_error("illegal number of type parameters"); \
     } \
     switch (parse_value_type((PARAMS)[0])) { \
-    case Bool:       _DO_FORMAT_PAIR(bool,PARAMS,FMT,ARGC,ARGV); break; \
-    case Char:       _DO_FORMAT_PAIR(char,PARAMS,FMT,ARGC,ARGV); break; \
-    case Short:      _DO_FORMAT_PAIR(short,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int:        _DO_FORMAT_PAIR(int,PARAMS,FMT,ARGC,ARGV); break; \
-    case Long:       _DO_FORMAT_PAIR(long,PARAMS,FMT,ARGC,ARGV); break; \
-    case LongLong:   _DO_FORMAT_PAIR(long long,PARAMS,FMT,ARGC,ARGV); break; \
-    case UChar:      _DO_FORMAT_PAIR(unsigned char,PARAMS,FMT,ARGC,ARGV); break; \
-    case UShort:     _DO_FORMAT_PAIR(unsigned short,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt:       _DO_FORMAT_PAIR(unsigned int,PARAMS,FMT,ARGC,ARGV); break; \
-    case ULong:      _DO_FORMAT_PAIR(unsigned long,PARAMS,FMT,ARGC,ARGV); break; \
-    case ULongLong:  _DO_FORMAT_PAIR(unsigned long long,PARAMS,FMT,ARGC,ARGV); break; \
-    case Float:      _DO_FORMAT_PAIR(float,PARAMS,FMT,ARGC,ARGV); break; \
-    case Double:     _DO_FORMAT_PAIR(double,PARAMS,FMT,ARGC,ARGV); break; \
-    case LongDouble: _DO_FORMAT_PAIR(long double,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int8:       _DO_FORMAT_PAIR(std::int8_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int16:      _DO_FORMAT_PAIR(std::int16_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int32:      _DO_FORMAT_PAIR(std::int32_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case Int64:      _DO_FORMAT_PAIR(std::int64_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt8:      _DO_FORMAT_PAIR(std::uint8_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt16:     _DO_FORMAT_PAIR(std::uint16_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt32:     _DO_FORMAT_PAIR(std::uint32_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case UInt64:     _DO_FORMAT_PAIR(std::uint64_t,PARAMS,FMT,ARGC,ARGV); break; \
-    case String:     _DO_FORMAT_PAIR(std::string,PARAMS,FMT,ARGC,ARGV); break; \
+    case Bool:       _DO_FORMAT_PAIR(bool,bool,PARAMS,FMT,ARGC,ARGV); break; \
+    case Char:       _DO_FORMAT_PAIR(Character,char,PARAMS,FMT,ARGC,ARGV); break; \
+    case Short:      _DO_FORMAT_PAIR(short,short,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int:        _DO_FORMAT_PAIR(int,int,PARAMS,FMT,ARGC,ARGV); break; \
+    case Long:       _DO_FORMAT_PAIR(long,long,PARAMS,FMT,ARGC,ARGV); break; \
+    case LongLong:   _DO_FORMAT_PAIR(long long,long long,PARAMS,FMT,ARGC,ARGV); break; \
+    case UChar:      _DO_FORMAT_PAIR(UCharacter,unsigned char,PARAMS,FMT,ARGC,ARGV); break; \
+    case UShort:     _DO_FORMAT_PAIR(unsigned short,unsigned short,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt:       _DO_FORMAT_PAIR(unsigned int,unsigned int,PARAMS,FMT,ARGC,ARGV); break; \
+    case ULong:      _DO_FORMAT_PAIR(unsigned long,unsigned long,PARAMS,FMT,ARGC,ARGV); break; \
+    case ULongLong:  _DO_FORMAT_PAIR(unsigned long long,unsigned long long,PARAMS,FMT,ARGC,ARGV); break; \
+    case Float:      _DO_FORMAT_PAIR(float,float,PARAMS,FMT,ARGC,ARGV); break; \
+    case Double:     _DO_FORMAT_PAIR(double,double,PARAMS,FMT,ARGC,ARGV); break; \
+    case LongDouble: _DO_FORMAT_PAIR(long double,long double,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int8:       _DO_FORMAT_PAIR(std::int8_t,std::int8_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int16:      _DO_FORMAT_PAIR(std::int16_t,std::int16_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int32:      _DO_FORMAT_PAIR(std::int32_t,std::int32_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case Int64:      _DO_FORMAT_PAIR(std::int64_t,std::int64_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt8:      _DO_FORMAT_PAIR(std::uint8_t,std::uint8_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt16:     _DO_FORMAT_PAIR(std::uint16_t,std::uint16_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt32:     _DO_FORMAT_PAIR(std::uint32_t,std::uint32_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case UInt64:     _DO_FORMAT_PAIR(std::uint64_t,std::uint64_t,PARAMS,FMT,ARGC,ARGV); break; \
+    case String:     _DO_FORMAT_PAIR(std::string,std::string,PARAMS,FMT,ARGC,ARGV); break; \
+    default: throw std::runtime_error("unhandeled type"); \
     }
 
 const std::string STD_NS = "std::";
@@ -394,12 +475,12 @@ void do_format(const char* fmt, const std::string& type, std::size_t argc, const
         ValueType tp = parse_value_type(name);
         switch (tp) {
         case Bool:       do_format_value<bool>(fmt, argv[0]); break;
-        case Char:       do_format_value<char>(fmt, argv[0]); break;
+        case Char:       do_format_value<Character,char>(fmt, argv[0]); break;
         case Short:      do_format_value<short>(fmt, argv[0]); break;
         case Int:        do_format_value<int>(fmt, argv[0]); break;
         case Long:       do_format_value<long>(fmt, argv[0]); break;
         case LongLong:   do_format_value<long long>(fmt, argv[0]); break;
-        case UChar:      do_format_value<unsigned char>(fmt, argv[0]); break;
+        case UChar:      do_format_value<UCharacter,unsigned char>(fmt, argv[0]); break;
         case UShort:     do_format_value<unsigned short>(fmt, argv[0]); break;
         case UInt:       do_format_value<unsigned int>(fmt, argv[0]); break;
         case ULong:      do_format_value<unsigned long>(fmt, argv[0]); break;
@@ -416,6 +497,7 @@ void do_format(const char* fmt, const std::string& type, std::size_t argc, const
         case UInt32:     do_format_value<std::uint32_t>(fmt, argv[0]); break;
         case UInt64:     do_format_value<std::uint64_t>(fmt, argv[0]); break;
         case String:     do_format_value<std::string>(fmt, argv[0]); break;
+        default: throw std::runtime_error("unhandeled type");
         }
     }
     else if (std::equal(j, e, ARRAY_BRACKETS.cbegin())) {
@@ -423,12 +505,12 @@ void do_format(const char* fmt, const std::string& type, std::size_t argc, const
         ValueType tp = parse_value_type(name);
         switch (tp) {
         case Bool:       do_format_array<bool>(fmt, argc, argv); break;
-        case Char:       do_format_array<char>(fmt, argc, argv); break;
+        case Char:       do_format_array<Character,char>(fmt, argc, argv); break;
         case Short:      do_format_array<short>(fmt, argc, argv); break;
         case Int:        do_format_array<int>(fmt, argc, argv); break;
         case Long:       do_format_array<long>(fmt, argc, argv); break;
         case LongLong:   do_format_array<long long>(fmt, argc, argv); break;
-        case UChar:      do_format_array<unsigned char>(fmt, argc, argv); break;
+        case UChar:      do_format_array<UCharacter,unsigned char>(fmt, argc, argv); break;
         case UShort:     do_format_array<unsigned short>(fmt, argc, argv); break;
         case UInt:       do_format_array<unsigned int>(fmt, argc, argv); break;
         case ULong:      do_format_array<unsigned long>(fmt, argc, argv); break;
@@ -445,6 +527,7 @@ void do_format(const char* fmt, const std::string& type, std::size_t argc, const
         case UInt32:     do_format_array<std::uint32_t>(fmt, argc, argv); break;
         case UInt64:     do_format_array<std::uint64_t>(fmt, argc, argv); break;
         case String:     do_format_array<std::string>(fmt, argc, argv); break;
+        default: throw std::runtime_error("unhandeled type");
         }
     }
     else if (*j == '<') {

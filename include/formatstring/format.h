@@ -52,7 +52,7 @@ namespace formatstring {
 
         template<typename... Args>
         void format(std::basic_ostream<Char>& out, const Args&... args) const {
-            typename BasicFormatter<Char>::List formatters;
+            BasicFormatters<Char> formatters;
             unpack_formatters(formatters, args...);
             apply(out, formatters);
         }
