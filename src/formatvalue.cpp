@@ -62,6 +62,22 @@ namespace formatstring {
         }
 
         template<typename Char>
+        void sepfill(std::basic_ostream<Char>& out, std::size_t width, std::size_t numlen) {
+            std::size_t place = width + numlen;
+            if (place % 4 == 0) {
+                out.put('0');
+            }
+            for (; width > 0; -- width, -- place) {
+                if (place % 4 == 0) {
+                    out.put(',');
+                }
+                else {
+                    out.put('0');
+                }
+            }
+        }
+
+        template<typename Char>
         struct repr_char {
             static inline void write_prefix(std::basic_ostream<Char>& out) {
                 (void)out;
@@ -300,7 +316,7 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
     }
 
     std::basic_string<Char> num = buffer.str();
-    typename std::basic_string<Char>::size_type length = prefix.length() + num.length();
+    typename std::basic_string<Char>::size_type length = prefix.size() + num.size();
 
     if (length < spec.width) {
         std::size_t padding = spec.width - length;
@@ -330,7 +346,12 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
         case Spec::AfterSign:
         case Spec::DefaultAlignment:
             out.write(prefix.c_str(), prefix.size());
-            impl::fill(out, spec.fill, padding);
+            if (spec.thoudsandsSeperator && spec.fill == '0') {
+                impl::sepfill(out, padding, num.size());
+            }
+            else {
+                impl::fill(out, spec.fill, padding);
+            }
             out.write(num.c_str(), num.size());
             break;
         }
@@ -459,7 +480,17 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
         case Spec::AfterSign:
         case Spec::DefaultAlignment:
             out.write(prefix.c_str(), prefix.size());
-            impl::fill(out, spec.fill, padding);
+            if (spec.thoudsandsSeperator && spec.fill == '0') {
+                Char chars[] = { (Char)'.', (Char)'e', 0 };
+                if (spec.upperCase) {
+                    chars[1] = (Char)'E';
+                }
+                std::size_t pos = num.find_first_of(chars);
+                impl::sepfill(out, padding, pos == std::basic_string<Char>::npos ? num.size() : pos);
+            }
+            else {
+                impl::fill(out, spec.fill, padding);
+            }
             out.write(num.c_str(), num.size());
             break;
         }
