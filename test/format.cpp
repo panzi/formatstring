@@ -63,6 +63,32 @@ private:
     unsigned char value;
 };
 
+class SCharacter {
+public:
+    inline SCharacter() : value(0) {}
+    inline SCharacter(signed char value) : value(value) {}
+    inline SCharacter(const SCharacter& other) = default;
+    inline SCharacter(SCharacter&& other) = default;
+
+    inline SCharacter& operator=(const SCharacter& other) = default;
+
+    inline SCharacter& operator=(signed char value) {
+        this->value = value;
+        return *this;
+    }
+
+    inline operator signed char () const {
+        return value;
+    }
+
+    inline operator int () const {
+        return value;
+    }
+
+private:
+    signed char value;
+};
+
 template<typename T>
 T lexical_cast(const char* str) {
     std::istringstream ss(str);
@@ -108,6 +134,11 @@ inline long double lexical_cast(const char* str) {
 }
 
 template<>
+inline const char* lexical_cast(const char* str) {
+    return str;
+}
+
+template<>
 std::int8_t lexical_cast(const char* str) {
     std::istringstream ss(str);
     int val = 0;
@@ -146,6 +177,14 @@ UCharacter lexical_cast(const char* str) {
 }
 
 template<>
+SCharacter lexical_cast(const char* str) {
+    if (std::strlen(str) > 1) {
+        throw std::invalid_argument(str);
+    }
+    return (signed char)str[0];
+}
+
+template<>
 bool lexical_cast(const char* str) {
     std::string val = str;
     std::transform(val.begin(), val.end(), val.begin(), [](char ch) { return std::tolower(ch); });
@@ -181,6 +220,7 @@ enum ValueType {
     Int,
     Long,
     LongLong,
+    SChar,
     UChar,
     UShort,
     UInt,
@@ -218,6 +258,9 @@ ValueType parse_value_type(const std::string& type) {
     }
     else if (type == "long long") {
         return LongLong;
+    }
+    else if (type == "signed char") {
+        return SChar;
     }
     else if (type == "unsigned char") {
         return UChar;
@@ -348,6 +391,7 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
     case Int:        FUNC<COLLECTION_TYPE<int>, int>((FMT), (ARGC), (ARGV)); break; \
     case Long:       FUNC<COLLECTION_TYPE<long>, long>((FMT), (ARGC), (ARGV)); break; \
     case LongLong:   FUNC<COLLECTION_TYPE<long long>, long long>((FMT), (ARGC), (ARGV)); break; \
+    case SChar:      FUNC<COLLECTION_TYPE<signed char>, SCharacter>((FMT), (ARGC), (ARGV)); break; \
     case UChar:      FUNC<COLLECTION_TYPE<unsigned char>, UCharacter>((FMT), (ARGC), (ARGV)); break; \
     case UShort:     FUNC<COLLECTION_TYPE<unsigned short>, unsigned short>((FMT), (ARGC), (ARGV)); break; \
     case UInt:       FUNC<COLLECTION_TYPE<unsigned int>, unsigned int>((FMT), (ARGC), (ARGV)); break; \
@@ -376,6 +420,7 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
     case Int:        do_format_map<MAP_TYPE<KEY_TYPE, int>, KEY_PARSE, int>((FMT), (ARGC), (ARGV)); break; \
     case Long:       do_format_map<MAP_TYPE<KEY_TYPE, long>, KEY_PARSE, long>((FMT), (ARGC), (ARGV)); break; \
     case LongLong:   do_format_map<MAP_TYPE<KEY_TYPE, long long>, KEY_PARSE, long long>((FMT), (ARGC), (ARGV)); break; \
+    case SChar:      do_format_map<MAP_TYPE<KEY_TYPE, signed char>, KEY_PARSE, SCharacter>((FMT), (ARGC), (ARGV)); break; \
     case UChar:      do_format_map<MAP_TYPE<KEY_TYPE, unsigned char>, KEY_PARSE, UCharacter>((FMT), (ARGC), (ARGV)); break; \
     case UShort:     do_format_map<MAP_TYPE<KEY_TYPE, unsigned short>, KEY_PARSE, unsigned short>((FMT), (ARGC), (ARGV)); break; \
     case UInt:       do_format_map<MAP_TYPE<KEY_TYPE, unsigned int>, KEY_PARSE, unsigned int>((FMT), (ARGC), (ARGV)); break; \
@@ -407,6 +452,7 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
     case Int:        _DO_FORMAT_MAP(MAP_TYPE,int,int,PARAMS,FMT,ARGC,ARGV); break; \
     case Long:       _DO_FORMAT_MAP(MAP_TYPE,long,long,PARAMS,FMT,ARGC,ARGV); break; \
     case LongLong:   _DO_FORMAT_MAP(MAP_TYPE,long long,long long,PARAMS,FMT,ARGC,ARGV); break; \
+    case SChar:      _DO_FORMAT_MAP(MAP_TYPE,SCharacter,signed char,PARAMS,FMT,ARGC,ARGV); break; \
     case UChar:      _DO_FORMAT_MAP(MAP_TYPE,UCharacter,unsigned char,PARAMS,FMT,ARGC,ARGV); break; \
     case UShort:     _DO_FORMAT_MAP(MAP_TYPE,unsigned short,unsigned short,PARAMS,FMT,ARGC,ARGV); break; \
     case UInt:       _DO_FORMAT_MAP(MAP_TYPE,unsigned int,unsigned int,PARAMS,FMT,ARGC,ARGV); break; \
@@ -435,6 +481,7 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
     case Int:        do_format_pair<FIRST_PARSE,int,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
     case Long:       do_format_pair<FIRST_PARSE,long,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
     case LongLong:   do_format_pair<FIRST_PARSE,long long,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
+    case SChar:      do_format_pair<FIRST_PARSE,SCharacter,FIRST_TYPE,signed char>(PARAMS,FMT,ARGC,ARGV); break; \
     case UChar:      do_format_pair<FIRST_PARSE,UCharacter,FIRST_TYPE,unsigned char>(PARAMS,FMT,ARGC,ARGV); break; \
     case UShort:     do_format_pair<FIRST_PARSE,unsigned short,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
     case UInt:       do_format_pair<FIRST_PARSE,unsigned int,FIRST_TYPE>(PARAMS,FMT,ARGC,ARGV); break; \
@@ -466,6 +513,7 @@ void do_format_array(const char* fmt, std::size_t argc, const char* argv[]) {
     case Int:        _DO_FORMAT_PAIR(int,int,PARAMS,FMT,ARGC,ARGV); break; \
     case Long:       _DO_FORMAT_PAIR(long,long,PARAMS,FMT,ARGC,ARGV); break; \
     case LongLong:   _DO_FORMAT_PAIR(long long,long long,PARAMS,FMT,ARGC,ARGV); break; \
+    case SChar:      _DO_FORMAT_PAIR(SCharacter,signed char,PARAMS,FMT,ARGC,ARGV); break; \
     case UChar:      _DO_FORMAT_PAIR(UCharacter,unsigned char,PARAMS,FMT,ARGC,ARGV); break; \
     case UShort:     _DO_FORMAT_PAIR(unsigned short,unsigned short,PARAMS,FMT,ARGC,ARGV); break; \
     case UInt:       _DO_FORMAT_PAIR(unsigned int,unsigned int,PARAMS,FMT,ARGC,ARGV); break; \
@@ -498,7 +546,7 @@ void do_format(const char* fmt, const std::string& type, std::size_t argc, const
         i += STD_NS.size();
     }
     auto j = i;
-    while (std::isalnum(*j) || *j == '_') ++ j;
+    while (std::isalnum(*j) || *j == '_' || std::isspace(*j)) ++ j;
 
     std::string name(i, j);
     if (j == e) {
@@ -514,6 +562,7 @@ void do_format(const char* fmt, const std::string& type, std::size_t argc, const
         case Int:        do_format_value<int>(fmt, argv[0]); break;
         case Long:       do_format_value<long>(fmt, argv[0]); break;
         case LongLong:   do_format_value<long long>(fmt, argv[0]); break;
+        case SChar:      do_format_value<SCharacter,signed char>(fmt, argv[0]); break;
         case UChar:      do_format_value<UCharacter,unsigned char>(fmt, argv[0]); break;
         case UShort:     do_format_value<unsigned short>(fmt, argv[0]); break;
         case UInt:       do_format_value<unsigned int>(fmt, argv[0]); break;
@@ -539,11 +588,17 @@ void do_format(const char* fmt, const std::string& type, std::size_t argc, const
         ValueType tp = parse_value_type(name);
         switch (tp) {
         case Bool:       do_format_array<bool>(fmt, argc, argv); break;
-        case Char:       do_format_array<Character,char>(fmt, argc, argv); break;
+        case Char:
+            if (argc != 1) {
+                throw std::range_error("illegal number of arguments");
+            }
+            do_format_value<const char*>(fmt, argv[0]);
+            break;
         case Short:      do_format_array<short>(fmt, argc, argv); break;
         case Int:        do_format_array<int>(fmt, argc, argv); break;
         case Long:       do_format_array<long>(fmt, argc, argv); break;
         case LongLong:   do_format_array<long long>(fmt, argc, argv); break;
+        case SChar:      do_format_array<SCharacter,signed char>(fmt, argc, argv); break;
         case UChar:      do_format_array<UCharacter,unsigned char>(fmt, argc, argv); break;
         case UShort:     do_format_array<unsigned short>(fmt, argc, argv); break;
         case UInt:       do_format_array<unsigned int>(fmt, argc, argv); break;
@@ -625,6 +680,7 @@ void usage(int argc, const char* argv[]) {
 
 int main(int argc, const char* argv[]) {
     const char* fmt = argv[1];
+
     if (argc < 3) {
         std::cerr << "illegal number of arguments\n";
         usage(argc, argv);
@@ -636,12 +692,15 @@ int main(int argc, const char* argv[]) {
     }
     catch (const std::invalid_argument& exc) {
         std::cerr << "invalid argument: " << exc.what() << '\n';
+        return 1;
     }
     catch (const std::exception& exc) {
         std::cerr << exc.what() << '\n';
+        return 1;
     }
     catch (...) {
         std::cerr << "unhandeled exception\n";
+        return 1;
     }
 
     return 0;

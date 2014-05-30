@@ -19,6 +19,8 @@ STR_REPR = {
 	'\\': '\\\\'
 }
 
+HAS_REPR = re.compile(r'{\d*!r[^}]*}')
+
 def crepr(val):
 	t = type(val)
 	if t in (int, long):
@@ -27,7 +29,7 @@ def crepr(val):
 		else:
 			return str(val)
 	elif t is float:
-		return str(val)
+		return repr(val)
 	elif t is str:
 		return cstr(val)
 	elif t is bool:
@@ -61,7 +63,7 @@ def combs(xs,*rest):
 		return xs
 
 bool_values  = [True, False]
-str_values   = ['', 'a', ' Foo\nBar\tBaz! ']
+str_values   = ['', 'a', ' Foo\nBar\tBaz!\\ ']
 
 char_values  = ['a', 'B', ' ']
 int8_values  = [-0x7f, -23, -5, -1, 0, 1, 5, 23, 65, 0x7f]
@@ -78,7 +80,7 @@ float_values = [
 	-1000000015047466219876688855040.000000,
 	-1234.56789, -1000.0, -100.0, -1.0, -0.0, 0.0, 1.0, 100.0, 1000.0, 1234.56789,
 	1000000015047466219876688855040.000000,
-	float('nan'), float('-inf'), float('inf')]
+	float('nan'), -float('nan'), float('-inf'), float('inf')]
 
 convs  = ['', '!r', '!s']
 aligns = ['', '_<', '_>', '_=', '_^']
@@ -98,8 +100,8 @@ str_aligns = ['_<', '_>', '_^']
 char_types   = []
 nondec_types = ['b', 'o', 'x']
 int_types    = nondec_types + ['d']
-# XXX: g and G isn't fully supported yet
-float_types  = ['e', 'E', 'f', 'F', 'g', 'G', '%']
+# XXX: g and G isn't fully supported yet (trailing zeros aren't truncated)
+float_types  = ['e', 'E', 'f', 'F', '%']
 str_types    = ['s']
 all_types    = char_types + int_types + float_types + str_types
 
@@ -141,30 +143,35 @@ float_formats = basic_formats + ['{%s}' % spec for spec in float_specs]
 str_formats   = basic_formats + ['{%s}' % spec for spec in str_specs]
 
 testcases = [
-#	('format_bool', 'bool', bool_values, bool_formats),
+#	('bool', bool_values, bool_formats),
 
-#	('format_char', 'char', char_values, char_formats),
+#	('char', char_values, char_formats),
 
-#	('format_int8', 'std::int8_t', int8_values, int_formats),
-	('format_int16', 'std::int16_t', int16_values, int_formats),
-	('format_int32', 'std::int32_t', int32_values, int_formats),
-	('format_int64', 'std::int64_t', int64_values, int_formats),
+#	('std::int8_t', int8_values, int_formats),
+	('std::int16_t', int16_values, int_formats),
+	('std::int32_t', int32_values, int_formats),
+	('std::int64_t', int64_values, int_formats),
 	
-#	('format_uint8', 'std::uint8_t', uint8_values, int_formats),
-	('format_uint16', 'std::uint16_t', uint16_values, int_formats),
-	('format_uint32', 'std::uint32_t', uint32_values, int_formats),
-	('format_uint64', 'std::uint64_t', uint64_values, int_formats),
+#	('std::uint8_t', uint8_values, int_formats),
+	('std::uint16_t', uint16_values, int_formats),
+	('std::uint32_t', uint32_values, int_formats),
+	('std::uint64_t', uint64_values, int_formats),
 
-	('format_float', 'float', float_values, float_formats),
-	('format_double', 'double', float_values, float_formats),
-	('format_long_double', 'long double', float_values, float_formats),
+	('float', float_values, float_formats),
+	('double', float_values, float_formats),
+	('long double', float_values, float_formats),
 
-	('format_str', 'std::string', str_values, str_formats)
+	('char[]', str_values, str_formats),
+	('std::string', str_values, str_formats)
 ]
 
 def run_test(binary,tp,fmt,value):
+	pytp    = type(value)
+	is_str  = pytp is str
+	is_repr = HAS_REPR.search(fmt) is not None
+
 	if tp == 'char' or tp == 'unsigned char':
-		if type(value) is str:
+		if is_str:
 			svalue = value
 		elif value < 0:
 			svalue = chr(c_uint8(-value).value)
@@ -172,27 +179,37 @@ def run_test(binary,tp,fmt,value):
 			svalue = chr(value)
 		pyres = fmt.format(value)
 	else:
-		svalue = str(value)
+		if pytp is float:
+			svalue = repr(value)
+		elif pytp is bool:
+			if value:
+				svalue = 'true'
+			else:
+				svalue = 'false'
+		else:
+			svalue = str(value)
 		pyres = fmt.format(value)
-	
+
+	if is_str and is_repr:
+		pyres = pyres.replace("'",'"')
+
 #	sys.stdout.write("         %r: %r == ...\n" % (value, pyres))
 	pipe = Popen([binary, fmt, tp, svalue], stdout=PIPE, stderr=PIPE)
 	if pipe.wait() == 0:
 		cppres = pipe.stdout.read().decode('latin1')
 		if pyres == cppres:
-			sys.stdout.write("[  OK  ] %r: %r == %r\n" % (value, pyres, cppres))
+			sys.stdout.write("[  OK  ] %s %r.format(%r): %s == %s\n" % (tp, fmt, value, pyres, cppres))
 		else:
-			sys.stdout.write("[ FAIL ] %r: %r != %r\n" % (value, pyres, cppres))
+			sys.stdout.write("[ FAIL ] %s %r.format(%r): %s != %s\n" % (tp, fmt, value, pyres, cppres))
 #			sys.exit(1)
 	else:
 		error = pipe.stderr.read().decode('utf-8')
-		sys.stdout.write("[ FAIL ] %r: %s\n" % (value, error))
+		sys.stdout.write("[ FAIL ] %s %r.format(%r): %s\n" % (tp, fmt, value, error))
 #		sys.exit(1)
 
 def run_tests(binary):
-	for name, tp, values, formats in testcases:
+	for tp, values, formats in testcases:
 		for fmt in formats:
-			sys.stdout.write("TEST: %s %r %s\n" % (name, fmt, tp))
 			for value in values:
 				run_test(binary,tp,fmt,value)
 		sys.stdout.write("\n")

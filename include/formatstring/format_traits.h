@@ -203,6 +203,16 @@ namespace formatstring {
         }
     };
 
+    template<typename Char>
+    struct format_traits<Char, long double> {
+        typedef Char char_type;
+        typedef long double value_type;
+
+        static inline BasicFormatter<Char> make_formatter(long double value) {
+            return make_value_formatter<Char,long double,format_float>(value);
+        }
+    };
+
     // ---- string ----
     template<typename Char>
     struct format_traits<Char, const Char[]> {

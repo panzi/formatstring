@@ -403,6 +403,10 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
             Char buffer[] = {'n', 'a', 'n', 0};
             num = buffer;
         }
+
+        if (spec.type == Spec::Percentage) {
+            num += (Char)'%';
+        }
     }
     else if (std::isinf(abs)) {
         if (spec.upperCase) {
@@ -412,6 +416,10 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
         else {
             Char buffer[] = {'i', 'n', 'f', 0};
             num = buffer;
+        }
+
+        if (spec.type == Spec::Percentage) {
+            num += (Char)'%';
         }
     }
     else {
