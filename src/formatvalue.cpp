@@ -64,11 +64,12 @@ namespace formatstring {
         template<typename Char>
         void sepfill(std::basic_ostream<Char>& out, std::size_t width, std::size_t numlen) {
             std::size_t place = width + numlen;
-            if (place % 4 == 0) {
+            // (x % 4) == (x & 3)
+            if ((place & 3) == 0) {
                 out.put('0');
             }
             for (; width > 0; -- width, -- place) {
-                if (place % 4 == 0) {
+                if ((place & 3) == 0) {
                     out.put(',');
                 }
                 else {
@@ -278,7 +279,7 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
             buffer.put('0');
         }
         else {
-            UInt bit = 1 << ((sizeof(abs) * 8) - 1);
+            UInt bit = (UInt)1 << ((sizeof(abs) * 8) - 1);
             while ((abs & bit) == 0) {
                 bit >>= 1;
             }
@@ -391,65 +392,92 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
         break;
     }
 
-    std::basic_ostringstream<Char> buffer;
+    std::basic_string<Char> num;
 
-    buffer.imbue(spec.thoudsandsSeperator ? impl::basic_grouping<Char>::thousands_grouping_locale : impl::basic_grouping<Char>::non_grouping_locale);
-
-    if (spec.upperCase) {
-        buffer.setf(std::ios::uppercase);
-    }
-
-    switch (spec.type) {
-    case Spec::Exp:
-        buffer.setf(std::ios::scientific, std::ios::floatfield);
-        buffer.precision(spec.precision);
-        buffer << abs;
-        break;
-
-    case Spec::Fixed:
-        buffer.setf(std::ios::fixed, std::ios::floatfield);
-        buffer.precision(spec.precision);
-        buffer << abs;
-        break;
-
-    case Spec::Generic:
-    case Spec::General:
-    {
-        int exponent = std::log10(abs);
-        int precision = spec.precision < 1 ? 1 : spec.precision;
-        if (-4 <= exponent && exponent < precision) {
-            buffer.setf(std::ios::fixed, std::ios::floatfield);
-            buffer.precision(precision - 1 - exponent);
+    if (std::isnan(abs)) {
+        if (spec.upperCase) {
+            Char buffer[] = {'N', 'A', 'N', 0};
+            num = buffer;
         }
         else {
-            buffer.setf(std::ios::scientific, std::ios::floatfield);
-            buffer.precision(precision - 1);
+            Char buffer[] = {'n', 'a', 'n', 0};
+            num = buffer;
         }
-        buffer << abs;
-        break;
     }
-    case Spec::Percentage:
-        buffer.setf(std::ios::fixed, std::ios::floatfield);
-        buffer.precision(spec.precision);
-        buffer << (abs * 100);
-        buffer.put('%');
-        break;
+    else if (std::isinf(abs)) {
+        if (spec.upperCase) {
+            Char buffer[] = {'I', 'N', 'F', 0};
+            num = buffer;
+        }
+        else {
+            Char buffer[] = {'i', 'n', 'f', 0};
+            num = buffer;
+        }
+    }
+    else {
+        std::basic_ostringstream<Char> buffer;
 
-    case Spec::HexFloat:
+        buffer.imbue(spec.thoudsandsSeperator ? impl::basic_grouping<Char>::thousands_grouping_locale : impl::basic_grouping<Char>::non_grouping_locale);
+
+        if (spec.upperCase) {
+            buffer.setf(std::ios::uppercase);
+        }
+
+        switch (spec.type) {
+        case Spec::Exp:
+            buffer.setf(std::ios::scientific, std::ios::floatfield);
+            buffer.precision(spec.precision);
+            buffer << abs;
+            break;
+
+        case Spec::Fixed:
+            buffer.setf(std::ios::fixed, std::ios::floatfield);
+            buffer.precision(spec.precision);
+            buffer << abs;
+            break;
+
+        case Spec::Generic:
+        case Spec::General:
+        {
+            // XXX: not 100% correct. it doesn't skip trailing 0s after the decimal point
+            int exponent = std::log10(abs);
+            int precision = spec.precision < 1 ? 1 : spec.precision;
+            if (-4 <= exponent && exponent < precision) {
+                buffer.setf(std::ios::fixed, std::ios::floatfield);
+                precision = precision - 1 - exponent;
+            }
+            else {
+                buffer.setf(std::ios::scientific, std::ios::floatfield);
+                precision = precision - 1;
+            }
+            buffer.precision(precision);
+            buffer << abs;
+            break;
+        }
+        case Spec::Percentage:
+            buffer.setf(std::ios::fixed, std::ios::floatfield);
+            buffer.precision(spec.precision);
+            buffer << (abs * 100);
+            buffer.put('%');
+            break;
+
+        case Spec::HexFloat:
 #ifdef FORMATSTRING_HEXFLOAT_SUPPORT
-        buffer.setf(std::ios::hexfloat, std::ios::floatfield);
-        buffer.precision(spec.precision);
-        buffer << abs;
-        break;
+            buffer.setf(std::ios::hexfloat, std::ios::floatfield);
+            buffer.precision(spec.precision);
+            buffer << abs;
+            break;
 #else
-        throw std::runtime_error("STL implementation does not support std::ios::hexfloat.");
+            throw std::runtime_error("STL implementation does not support std::ios::hexfloat.");
 #endif
 
-    default:
-        break;
+        default:
+            break;
+        }
+
+        num = buffer.str();
     }
 
-    std::basic_string<Char> num = buffer.str();
     typename std::basic_string<Char>::size_type length = prefix.size() + num.size();
 
     if (length < spec.width) {

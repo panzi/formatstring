@@ -212,6 +212,9 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
 
     case '%':
         spec->type = Spec::Percentage;
+        if (!precision) {
+            spec->precision = 6;
+        }
         ++ ptr;
         break;
     }

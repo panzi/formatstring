@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <cstdint>
+#include <cstdlib>
 
 #include <formatstring.h>
 
@@ -71,6 +72,39 @@ T lexical_cast(const char* str) {
         throw std::invalid_argument(str);
     }
     return val;
+}
+
+template<typename T, T strtoT(const char*, char**)>
+T c_lexical_cast(const char* str) {
+    char* endptr = 0;
+    T val = strtoT(str, &endptr);
+    if (endptr == str || *endptr) {
+        throw std::invalid_argument(str);
+    }
+    // fix -NAN parsing
+    if (std::isnan(val)) {
+        const char* ptr = str;
+        while (std::isspace(*ptr)) ++ ptr;
+        if (*ptr == '-') {
+            val = -NAN;
+        }
+    }
+    return val;
+}
+
+template<>
+inline float lexical_cast(const char* str) {
+    return c_lexical_cast<float,std::strtof>(str);
+}
+
+template<>
+inline double lexical_cast(const char* str) {
+    return c_lexical_cast<double,std::strtod>(str);
+}
+
+template<>
+inline long double lexical_cast(const char* str) {
+    return c_lexical_cast<long double,std::strtold>(str);
 }
 
 template<>
