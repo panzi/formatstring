@@ -78,9 +78,17 @@ uint64_values = uint32_values + [0xffffffffffffffff]
 
 float_values = [
 	-1000000015047466219876688855040.000000,
+	-1234.5, -1000.0, -100.0, -1.0, -0.0, 0.0, 1.0, 100.0, 1000.0, 1234.5,
+	1000000015047466219876688855040.000000,
+	float('nan'), -float('nan'), float('-inf'), float('inf')]
+
+double_values = [
+	-1000000015047466219876688855040.000000,
 	-1234.56789, -1000.0, -100.0, -1.0, -0.0, 0.0, 1.0, 100.0, 1000.0, 1234.56789,
 	1000000015047466219876688855040.000000,
 	float('nan'), -float('nan'), float('-inf'), float('inf')]
+
+long_double_values = list(double_values)
 
 convs  = ['', '!r', '!s']
 aligns = ['', '_<', '_>', '_=', '_^']
@@ -158,8 +166,8 @@ testcases = [
 	('std::uint64_t', uint64_values, int_formats),
 
 	('float', float_values, float_formats),
-	('double', float_values, float_formats),
-	('long double', float_values, float_formats),
+	('double', double_values, float_formats),
+	('long double', long_double_values, float_formats),
 
 	('char[]', str_values, str_formats),
 	('std::string', str_values, str_formats)

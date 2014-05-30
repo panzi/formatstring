@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <cstdint>
-#include <cstdlib>
+#include <cctype>
 
 #include <formatstring.h>
 
@@ -89,6 +89,23 @@ private:
     signed char value;
 };
 
+// trim from start
+static inline std::string &ltrim(std::string &s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+        return s;
+}
+
+// trim from end
+static inline std::string &rtrim(std::string &s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+        return s;
+}
+
+// trim from both ends
+static inline std::string &trim(std::string &s) {
+        return ltrim(rtrim(s));
+}
+
 template<typename T>
 T lexical_cast(const char* str) {
     std::istringstream ss(str);
@@ -100,37 +117,47 @@ T lexical_cast(const char* str) {
     return val;
 }
 
-template<typename T, T strtoT(const char*, char**)>
-T c_lexical_cast(const char* str) {
-    char* endptr = 0;
-    T val = strtoT(str, &endptr);
-    if (endptr == str || *endptr) {
-        throw std::invalid_argument(str);
+template<typename Float>
+Float float_lexical_cast(std::string str) {
+    std::locale loc;
+    trim(str);
+    std::transform(str.begin(), str.end(), str.begin(), [&loc](char c){ return std::tolower(c, loc); });
+    if (str == "inf" || str == "+inf") {
+        return INFINITY;
     }
-    // fix -NAN parsing
-    if (std::isnan(val)) {
-        const char* ptr = str;
-        while (std::isspace(*ptr)) ++ ptr;
-        if (*ptr == '-') {
-            val = -NAN;
+    else if (str == "-inf") {
+        return -INFINITY;
+    }
+    else if (str == "nan" || str == "+nan") {
+        return NAN;
+    }
+    else if (str == "-nan") {
+        return -NAN;
+    }
+    else {
+        std::istringstream ss(str);
+        Float val = 0;
+        ss >> val;
+        if (ss.fail() || !ss.eof()) {
+            throw std::invalid_argument(str);
         }
+        return val;
     }
-    return val;
 }
 
 template<>
 inline float lexical_cast(const char* str) {
-    return c_lexical_cast<float,std::strtof>(str);
+    return float_lexical_cast<float>(str);
 }
 
 template<>
 inline double lexical_cast(const char* str) {
-    return c_lexical_cast<double,std::strtod>(str);
+    return float_lexical_cast<double>(str);
 }
 
 template<>
 inline long double lexical_cast(const char* str) {
-    return c_lexical_cast<long double,std::strtold>(str);
+    return float_lexical_cast<long double>(str);
 }
 
 template<>
