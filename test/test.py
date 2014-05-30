@@ -130,9 +130,13 @@ char_specs = \
 	list(comb(convs, (':'+spec for spec in
 		combs(aligns, signs, widths, tdssep, [''] + float_types))))
 
+#float_specs = \
+#	list(comb(convs, (':'+spec for spec in
+#		combs(aligns, signs, widths, tdssep, [''] + float_types))))
+
 float_specs = \
 	list(comb(convs, (':'+spec for spec in
-		combs(aligns, signs, widths, tdssep, [''] + float_types))))
+		combs(aligns, signs, widths, tdssep, float_types))))
 
 str_specs = \
 	list(comb(convs, (':'+spec for spec in
@@ -144,7 +148,8 @@ basic_formats = ['{}', '{!r}', '{!s}', '{0}', 'foo {0} bar {0} baz']
 bool_formats  = basic_formats + ['{%s}' % spec for spec in bool_specs]
 char_formats  = basic_formats + ['{%s}' % spec for spec in char_specs]
 int_formats   = basic_formats + ['{%s}' % spec for spec in int_specs]
-float_formats = basic_formats + ['{%s}' % spec for spec in float_specs]
+#float_formats = basic_formats + ['{%s}' % spec for spec in float_specs]
+float_formats = ['{%s}' % spec for spec in float_specs]
 str_formats   = basic_formats + ['{%s}' % spec for spec in str_specs]
 
 testcases = [

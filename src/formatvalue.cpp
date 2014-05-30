@@ -516,7 +516,7 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
         case Spec::AfterSign:
         case Spec::DefaultAlignment:
             out.write(prefix.c_str(), prefix.size());
-            if (spec.thoudsandsSeperator && spec.fill == '0') {
+            if (spec.thoudsandsSeperator && spec.fill == '0' && std::isfinite(abs)) {
                 Char chars[] = { (Char)'.', (Char)'e', 0 };
                 if (spec.upperCase) {
                     chars[1] = (Char)'E';
