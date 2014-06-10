@@ -363,6 +363,50 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
     }
 }
 
+template<typename Float>
+inline std::string format_hexfloat(Float value, const FormatSpec& spec) {
+    const char *fmt = std::is_same<Float,long double>::value ?
+            (spec.upperCase ? "%*.*LA" : "%*.*La") :
+            (spec.upperCase ? "%*.*A" : "%*.*a");
+    char buf[64];
+    int count = std::snprintf(buf, sizeof(buf), fmt, spec.width, spec.precision, value);
+    if (count < 2 || count >= sizeof(buf)) {
+        throw std::runtime_error("unexpected snprintf fail while processing hexfloat format");
+    }
+    return buf;
+}
+
+template<typename Float>
+inline std::wstring format_hexfloat(Float value, const WFormatSpec& spec) {
+    const wchar_t *fmt = std::is_same<Float,long double>::value ?
+            (spec.upperCase ? L"%*.*LA" : L"%*.*La") :
+            (spec.upperCase ? L"%*.*A" : L"%*.*a");
+    wchar_t buf[64];
+    int count = std::swprintf(buf, sizeof(buf)/sizeof(wchar_t), fmt, spec.width, spec.precision, value);
+    if (count < 2 || count >= sizeof(buf)/sizeof(wchar_t)) {
+        throw std::runtime_error("unexpected printf fail while processing hexfloat format");
+    }
+    return buf;
+}
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+template<typename Float>
+inline std::basic_string<char16_t> format_hexfloat(Float value, const U16FormatSpec& spec) {
+    (void)value;
+    (void)spec;
+    throw std::runtime_error("STL implementation does not support std::ios::hexfloat.");
+}
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+template<typename Float>
+inline std::basic_string<char32_t> format_hexfloat(Float value, const U32FormatSpec& spec) {
+    (void)value;
+    (void)spec;
+    throw std::runtime_error("STL implementation does not support std::ios::hexfloat.");
+}
+#endif
+
 template<typename Char, typename Float>
 void formatstring::format_float(std::basic_ostream<Char>& out, Float value, const BasicFormatSpec<Char>& spec) {
     typedef BasicFormatSpec<Char> Spec;
@@ -422,6 +466,11 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
             num += (Char)'%';
         }
     }
+#if !defined(FORMATSTRING_IOS_HEXFLOAT_SUPPORT) && defined(FORMATSTRING_PRINTF_HEXFLOAT_SUPPORT)
+    else if (spec.type == Spec::HexFloat) {
+        num = format_hexfloat(abs, spec);
+    }
+#endif
     else {
         std::basic_ostringstream<Char> buffer;
 
@@ -470,7 +519,7 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
             break;
 
         case Spec::HexFloat:
-#ifdef FORMATSTRING_HEXFLOAT_SUPPORT
+#ifdef FORMATSTRING_IOS_HEXFLOAT_SUPPORT
             buffer.setf(std::ios::hexfloat, std::ios::floatfield);
             buffer.precision(spec.precision);
             buffer << abs;

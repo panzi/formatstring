@@ -24,6 +24,7 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 include(CheckCXXSourceCompiles)
+include(CheckCXXSourceRuns)
 
 check_cxx_source_compiles("
 #include <ios>
@@ -31,7 +32,17 @@ int main() {
 	std::cout.setf(std::ios::hexfloat, std::ios::floatfield);
 	return 0;
 }
-" FORMATSTRING_HEXFLOAT_SUPPORT)
+" FORMATSTRING_IOS_HEXFLOAT_SUPPORT)
+
+check_cxx_source_runs("
+#include <cstdio>
+#include <cstring>
+int main() {
+	wchar_t buf[64];
+	if (std::swprintf(buf, sizeof(buf), L\"%.3La\", (long double)1200.0) < 0) return 1;
+	return std::wcscmp(buf, L\"0x9.600p+7\");
+}
+" FORMATSTRING_PRINTF_HEXFLOAT_SUPPORT)
 
 check_cxx_source_compiles("
 #include <iostream>
