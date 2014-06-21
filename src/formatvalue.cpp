@@ -1,5 +1,7 @@
 #include "formatstring/formatvalue.h"
 
+#include <vector>
+
 namespace formatstring {
     namespace impl {
         template<typename Char>
@@ -363,30 +365,67 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
     }
 }
 
+#if !defined(FORMATSTRING_IOS_HEXFLOAT_SUPPORT) && defined(FORMATSTRING_PRINTF_HEXFLOAT_SUPPORT)
 template<typename Float>
 inline std::string format_hexfloat(Float value, const FormatSpec& spec) {
+    if (spec.alignment == FormatSpec::DefaultAlignment || spec.alignment == FormatSpec::AfterSign) {
+        if (spec.fill != '0') {
+            throw std::runtime_error("unsupported hexfloat format for snprintf fallback");
+        }
+
+        const char *fmt = std::is_same<Float,long double>::value ?
+                (spec.upperCase ? "%0*.*LA" : "%0*.*La") :
+                (spec.upperCase ? "%0*.*A" : "%0*.*a");
+        std::size_t n = std::max(spec.width + 1, 64);
+        std::vector<char> buf(n, '\0');
+        int count = std::snprintf(buf.data(), n, fmt, spec.width, spec.precision, value);
+        if (count < 2 || count >= n) {
+            throw std::runtime_error("unexpected snprintf fail while processing hexfloat format");
+        }
+        return buf.data();
+    }
+
     const char *fmt = std::is_same<Float,long double>::value ?
-            (spec.upperCase ? "%*.*LA" : "%*.*La") :
-            (spec.upperCase ? "%*.*A" : "%*.*a");
-    char buf[64];
-    int count = std::snprintf(buf, sizeof(buf), fmt, spec.width, spec.precision, value);
-    if (count < 2 || count >= sizeof(buf)) {
+            (spec.upperCase ? "%.*LA" : "%.*La") :
+            (spec.upperCase ? "%.*A" : "%.*a");
+    std::size_t n = std::max(spec.precision, 0) + 64;
+    std::vector<char> buf(n, '\0');
+    int count = std::snprintf(buf.data(), n, fmt, spec.precision, value);
+    if (count < 2 || count >= n) {
         throw std::runtime_error("unexpected snprintf fail while processing hexfloat format");
     }
-    return buf;
+    return buf.data();
 }
 
 template<typename Float>
 inline std::wstring format_hexfloat(Float value, const WFormatSpec& spec) {
+    if (spec.alignment == WFormatSpec::DefaultAlignment || spec.alignment == WFormatSpec::AfterSign) {
+        if (spec.fill != L'0') {
+            throw std::runtime_error("unsupported hexfloat format for swprintf fallback");
+        }
+
+        const wchar_t *fmt = std::is_same<Float,long double>::value ?
+                (spec.upperCase ? L"%0*.*LA" : L"%0*.*La") :
+                (spec.upperCase ? L"%0*.*A" : L"%0*.*a");
+        std::size_t n = std::max(spec.width + 1, 64);
+        std::vector<wchar_t> buf(n, '\0');
+        int count = std::swprintf(buf.data(), n, fmt, spec.width, spec.precision, value);
+        if (count < 2 || count >= n) {
+            throw std::runtime_error("unexpected printf fail while processing hexfloat format");
+        }
+        return buf.data();
+    }
+
     const wchar_t *fmt = std::is_same<Float,long double>::value ?
-            (spec.upperCase ? L"%*.*LA" : L"%*.*La") :
-            (spec.upperCase ? L"%*.*A" : L"%*.*a");
-    wchar_t buf[64];
-    int count = std::swprintf(buf, sizeof(buf)/sizeof(wchar_t), fmt, spec.width, spec.precision, value);
-    if (count < 2 || count >= sizeof(buf)/sizeof(wchar_t)) {
+            (spec.upperCase ? L"%.*LA" : L"%.*La") :
+            (spec.upperCase ? L"%.*A" : L"%.*a");
+    std::size_t n = std::max(spec.width+1, 64);
+    std::vector<wchar_t> buf(n, '\0');
+    int count = std::swprintf(buf.data(), n, fmt, spec.precision, value);
+    if (count < 2 || count >= n) {
         throw std::runtime_error("unexpected printf fail while processing hexfloat format");
     }
-    return buf;
+    return buf.data();
 }
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
@@ -405,6 +444,7 @@ inline std::basic_string<char32_t> format_hexfloat(Float value, const U32FormatS
     (void)spec;
     throw std::runtime_error("STL implementation does not support std::ios::hexfloat.");
 }
+#endif
 #endif
 
 template<typename Char, typename Float>
