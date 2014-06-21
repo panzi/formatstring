@@ -91,6 +91,7 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
 
     if (*ptr == '0') {
         if (!fill) {
+            spec->alignment = Spec::AfterSign;
             spec->fill = '0';
         }
         ++ ptr;
@@ -219,6 +220,10 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
         break;
     }
 
+    if (spec->alignment == Spec::AfterSign && spec->isStringType()) {
+        throw std::invalid_argument("'=' alignment not allowed in string format specifier");
+    }
+
     if (spec->thoudsandsSeperator &&
             spec->type != Spec::Generic &&
             spec->type != Spec::Dec &&
@@ -232,7 +237,7 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
         throw std::invalid_argument(msg);
     }
 
-    if (spec->alternate && spec->type == Spec::String) {
+    if (spec->alternate && spec->isStringType()) {
         throw std::invalid_argument("Alternate form (#) not allowed in string format specifier");
     }
 

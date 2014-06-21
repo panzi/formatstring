@@ -331,6 +331,7 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
             break;
 
         case Spec::Right:
+        case Spec::DefaultAlignment:
             impl::fill(out, spec.fill, padding);
             out.write(prefix.c_str(), prefix.size());
             out.write(num.c_str(), num.size());
@@ -347,7 +348,6 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
         }
 
         case Spec::AfterSign:
-        case Spec::DefaultAlignment:
             out.write(prefix.c_str(), prefix.size());
             if (spec.thoudsandsSeperator && spec.fill == '0') {
                 impl::sepfill(out, padding, num.size());
@@ -368,8 +368,8 @@ void formatstring::format_integer(std::basic_ostream<Char>& out, Int value, cons
 #if !defined(FORMATSTRING_IOS_HEXFLOAT_SUPPORT) && defined(FORMATSTRING_PRINTF_HEXFLOAT_SUPPORT)
 template<typename Float>
 inline std::string format_hexfloat(Float value, const FormatSpec& spec) {
-    if (spec.alignment == FormatSpec::DefaultAlignment || spec.alignment == FormatSpec::AfterSign) {
-        if (spec.fill != '0') {
+    if (spec.alignment == FormatSpec::AfterSign) {
+        if (spec.width > 3 && spec.fill != '0') {
             throw std::runtime_error("unsupported hexfloat format for snprintf fallback");
         }
 
@@ -399,8 +399,8 @@ inline std::string format_hexfloat(Float value, const FormatSpec& spec) {
 
 template<typename Float>
 inline std::wstring format_hexfloat(Float value, const WFormatSpec& spec) {
-    if (spec.alignment == WFormatSpec::DefaultAlignment || spec.alignment == WFormatSpec::AfterSign) {
-        if (spec.fill != L'0') {
+    if (spec.alignment == WFormatSpec::AfterSign) {
+        if (spec.width > 3 && spec.fill != L'0') {
             throw std::runtime_error("unsupported hexfloat format for swprintf fallback");
         }
 
@@ -587,6 +587,7 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
             break;
 
         case Spec::Right:
+        case Spec::DefaultAlignment:
             impl::fill(out, spec.fill, padding);
             out.write(prefix.c_str(), prefix.size());
             out.write(num.c_str(), num.size());
@@ -603,7 +604,6 @@ void formatstring::format_float(std::basic_ostream<Char>& out, Float value, cons
         }
 
         case Spec::AfterSign:
-        case Spec::DefaultAlignment:
             out.write(prefix.c_str(), prefix.size());
             if (spec.thoudsandsSeperator && spec.fill == '0' && std::isfinite(abs)) {
                 Char chars[] = { (Char)'.', (Char)'e', 0 };
@@ -658,8 +658,8 @@ void formatstring::format_string(std::basic_ostream<Char>& out, const Char value
         case Spec::AfterSign:
             throw std::invalid_argument("'=' alignment not allowed in string or character format specifier");
 
-        case Spec::DefaultAlignment:
         case Spec::Left:
+        case Spec::DefaultAlignment:
             out.write(value, length);
             impl::fill(out, spec.fill, padding);
             break;
