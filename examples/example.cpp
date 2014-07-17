@@ -238,5 +238,7 @@ int main() {
         std::cerr << exc.what() << std::endl;
     }
 
+    std::cout << "{} {}\n"_fmt("foo",12);
+
     return 0;
 }

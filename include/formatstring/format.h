@@ -325,6 +325,31 @@ namespace formatstring {
 
     extern template class FORMATSTRING_EXPORT BasicFormat<wchar_t>;
     extern template class FORMATSTRING_EXPORT BasicBoundFormat<wchar_t>;
+
+    // ---- literals ----
+    inline Format operator "" _fmt (const char* fmt, std::size_t size) {
+        (void)size;
+        return fmt;
+    }
+
+    inline WFormat operator "" _fmt (const wchar_t* fmt, std::size_t size) {
+        (void)size;
+        return fmt;
+    }
+
+#ifdef FORMATSTRING_CHAR16_SUPPORT
+    inline U16Format operator "" _fmt (const char16_t* fmt, std::size_t size) {
+        (void)size;
+        return fmt;
+    }
+#endif
+
+#ifdef FORMATSTRING_CHAR32_SUPPORT
+    inline U32Format operator "" _fmt (const char32_t* fmt, std::size_t size) {
+        (void)size;
+        return fmt;
+    }
+#endif
 }
 
 #endif // FORMATSTRING_FORMAT_H
