@@ -5,13 +5,6 @@
 #include <iosfwd>
 #include <memory>
 #include <vector>
-#include <list>
-#include <array>
-#include <tuple>
-#include <map>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
 #include <functional>
 
 #include "formatstring/config.h"

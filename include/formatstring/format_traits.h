@@ -7,6 +7,14 @@
 #include "formatstring/format_traits_fwd.h"
 
 #include <type_traits>
+#include <vector>
+#include <list>
+#include <array>
+#include <tuple>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace formatstring {
 
