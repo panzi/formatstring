@@ -219,7 +219,7 @@ int main() {
     void *vptr = intarr;
     std::cout << format(".{:_^20}.\n", vptr);
 
-    std::cout << format(".{:_^20}.\n", std::initializer_list<int>({-1, 0, 1}));
+    std::cout << format(".{:_^20}.\n", std::initializer_list<int>{-1, 0, 1});
 
     std::cout << format("{} {}\n", FormatSpec("_^020") == FormatSpec("_^20"), FormatSpec(" =") != FormatSpec(""));
 
@@ -240,6 +240,7 @@ int main() {
 
     std::cout << "{} {}\n"_fmt("foo",12);
     std::cout << format("{{\n");
+    std::cout << format(std::string("{}\n"), std::string("x"));
 
     return 0;
 }

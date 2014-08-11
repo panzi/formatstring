@@ -161,7 +161,7 @@ namespace formatstring {
 
     template<typename Char, typename... Args>
     inline BasicBoundFormat<Char> format(std::basic_string<Char>&& fmt, Args&&... args) {
-        return BasicBoundFormat<Char>(std::forward(fmt), std::forward<Args>(args)...);
+        return BasicBoundFormat<Char>(std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename Char>
