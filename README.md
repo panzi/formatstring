@@ -17,7 +17,7 @@ int main() {
 	std::cout << format("hex: {:#x}, centerd: {:_^20}, padded: {:+010.3f}\n",
 	                    1234, "test", 3.14159);
 
-	// create a temp. formatting object the gets converted into a string
+	// create a temp. formatting object that gets converted into a string
 	std::string s1 = format("{:d} {:c}", 'A', 66);
 
 	// convert a single value to a string
@@ -35,6 +35,9 @@ int main() {
 	// generate any code in the binary.
 	std::cout << debug("test {}\n", 123);
 
+	// I even added a format literal, just for fun
+	std::cout << "{}\n"_fmt("test");
+
 	return 0;
 }
 ```
@@ -44,6 +47,7 @@ Output:
 	hex: 0x4d2, centerd: ________test________, padded: +00003.142
 	A B 0x000000000000000004d2
 	65 B
+	test
 
 TODO
 ----

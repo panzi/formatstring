@@ -87,6 +87,9 @@ namespace formatstring {
         template<typename _Char, typename... Args>
         friend BasicBoundFormat<_Char> format(const _Char* fmt, const Args&... args);
 
+        template<typename _Char, typename... Args>
+        friend BasicBoundFormat<_Char> format(std::basic_string<_Char>&& fmt, Args&&... args);
+
 #ifndef NDEBUG
         template<typename _Char, typename... Args>
         friend BasicBoundFormat<_Char> debug(const std::basic_string<_Char>& fmt, const Args&... args);
@@ -98,35 +101,26 @@ namespace formatstring {
         BasicBoundFormat(BasicBoundFormat<Char>&& rhs) :
             m_format(std::move(rhs.m_format)), m_formatters(std::move(rhs.m_formatters)) {}
 
-        BasicBoundFormat(const BasicBoundFormat<Char>& other) :
-            m_format(other.m_format), m_formatters(other.m_formatters) {}
+        BasicBoundFormat(const BasicBoundFormat<Char>& other) = delete;
 
         template<typename... Args>
         BasicBoundFormat(const BasicFormat<Char>& format, const Args&... args) :
-            m_format(format), m_formatters() {
-            std::shared_ptr< BasicFormatters<Char> > formatters = std::make_shared< BasicFormatters<Char> >();
-            unpack_formatters<Char>(*formatters, args...);
-            m_formatters = formatters;
-        }
+            m_format(format), m_formatters({format_traits<Char,Args>::make_formatter(args)...}) {}
 
         template<typename... Args>
         BasicBoundFormat(BasicFormat<Char>&& format, const Args&... args) :
-            m_format(std::move(format)), m_formatters() {
-            std::shared_ptr< BasicFormatters<Char> > formatters = std::make_shared< BasicFormatters<Char> >();
-            unpack_formatters<Char>(*formatters, args...);
-            m_formatters = formatters;
-        }
+            m_format(std::move(format)), m_formatters({format_traits<Char,Args>::make_formatter(args)...}) {}
 
         BasicFormat<Char>& operator= (const BasicFormat<Char>& other) = delete;
 
     public:
         inline void write_into(std::basic_ostream<Char>& out) const {
-            m_format.apply(out, *m_formatters);
+            m_format.apply(out, m_formatters);
         }
 
         inline operator std::basic_string<Char> () const {
             std::basic_ostringstream<Char> out;
-            m_format.apply(out, *m_formatters);
+            m_format.apply(out, m_formatters);
             return out.str();
         }
 
@@ -136,7 +130,7 @@ namespace formatstring {
 
     private:
         const BasicFormat<Char> m_format;
-        std::shared_ptr< const BasicFormatters<Char> > m_formatters;
+        const BasicFormatters<Char> m_formatters;
     };
 
     template<typename Char>
@@ -165,6 +159,11 @@ namespace formatstring {
     template<typename Char, typename... Args>
     inline BasicBoundFormat<Char> format(const Char* fmt, const Args&... args) {
         return BasicBoundFormat<Char>(fmt, args...);
+    }
+
+    template<typename Char, typename... Args>
+    inline BasicBoundFormat<Char> format(std::basic_string<Char>&& fmt, Args&&... args) {
+        return BasicBoundFormat<Char>(std::forward(fmt), std::forward<Args>(args)...);
     }
 
     template<typename Char>

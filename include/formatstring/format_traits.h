@@ -33,16 +33,6 @@ namespace formatstring {
     };
 
     // ---- special characters ----
-    template<typename Char>
-    struct format_traits<Char, bool> {
-        typedef Char char_type;
-        typedef bool value_type;
-
-        static inline BasicFormatter<Char> make_formatter(bool value) {
-            return make_value_formatter<Char,bool>(value);
-        }
-    };
-
 #ifdef FORMATSTRING_CHAR16_SUPPORT
     template<>
     struct format_traits<char16_t, char16_t> {
@@ -75,6 +65,17 @@ namespace formatstring {
 
         static inline BasicFormatter<wchar_t> make_formatter(wchar_t value) {
             return make_value_formatter<wchar_t,wchar_t,format_char<wchar_t,wchar_t>,repr_char<wchar_t>>(value);
+        }
+    };
+
+    // ---- boolean ----
+    template<typename Char>
+    struct format_traits<Char, bool> {
+        typedef Char char_type;
+        typedef bool value_type;
+
+        static inline BasicFormatter<Char> make_formatter(bool value) {
+            return make_value_formatter<Char,bool>(value);
         }
     };
 

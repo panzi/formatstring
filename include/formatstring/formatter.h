@@ -3,7 +3,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <memory>
 #include <vector>
 #include <functional>
 
@@ -36,23 +35,6 @@ namespace formatstring {
     typedef BasicFormatter<char32_t> U16Formatter;
     typedef BasicFormatters<char32_t> U16Formatters;
 #endif
-
-    template<typename Char, typename First, typename... Rest>
-    inline void unpack_formatters(BasicFormatters<Char>& formatters, const First& first, const Rest&... rest);
-
-    template<typename Char>
-    inline void unpack_formatters(BasicFormatters<Char>& formatters);
-
-    template<typename Char, typename First, typename... Rest>
-    inline void unpack_formatters(BasicFormatters<Char>& formatters, const First& first, const Rest&... rest) {
-        formatters.emplace_back(format_traits<Char,First>::make_formatter(first));
-        unpack_formatters<Char, Rest...>(formatters, rest...);
-    }
-
-    template<typename Char>
-    inline void unpack_formatters(BasicFormatters<Char>& formatters) {
-        (void)formatters;
-    }
 
     template<typename Char, typename T,
              void _format(std::basic_ostream<Char>& out, T value, const BasicFormatSpec<Char>& spec) = format_value,
