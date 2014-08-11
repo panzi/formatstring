@@ -172,8 +172,8 @@ int main() {
     Format fmt = compile("{}-{:c}");
 
     std::cout << fmt('A', 52) << ' ';
-    std::cout << fmt(53, 'B') << '\n';
-    std::cout << format("bla {} {:_^20} {} {} {} {} {}\n", vec, arr, std::vector<int>{5, 6, 7},
+    fmt.format(std::cout, 53, 'B');
+    std::cout << format("\nbla {} {:_^20} {} {} {} {} {}\n", vec, arr, std::vector<int>{5, 6, 7},
                         std::tuple<std::string,int,bool>("foo\n\t\"\\", 12, false),
                         std::tuple<float>(0), std::tuple<>(), std::pair<int,std::string>(32,"bla"));
 

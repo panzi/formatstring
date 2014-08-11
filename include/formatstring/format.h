@@ -51,10 +51,8 @@ namespace formatstring {
         BasicFormat(BasicFormat<Char>&& rhs) : m_fmt(std::move(rhs.m_fmt)) {}
 
         template<typename... Args>
-        void format(std::basic_ostream<Char>& out, const Args&... args) const {
-            BasicFormatters<Char> formatters;
-            unpack_formatters(formatters, args...);
-            apply(out, formatters);
+        inline void format(std::basic_ostream<Char>& out, const Args&... args) const {
+            apply(out, {format_traits<Char,Args>::make_formatter(args)...});
         }
 
         template<typename... Args>
