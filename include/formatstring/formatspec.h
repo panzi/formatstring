@@ -102,7 +102,7 @@ namespace formatstring {
                 bool      thoudsandsSeperator = false,
                 int       precision = DEFAULT_PRECISION,
                 Type      type = Generic,
-                bool      upperCase = false) :
+                bool      upperCase = false) noexcept :
             fill(fill), alignment(alignment), sign(sign), alternate(alternate), width(width),
             thoudsandsSeperator(thoudsandsSeperator), precision(precision), type(type), upperCase(upperCase) {}
 
@@ -120,7 +120,7 @@ namespace formatstring {
             return *this;
         }
 
-        inline bool equals(const self_type& other) const {
+        inline bool equals(const self_type& other) const noexcept {
             return fill == other.fill && alignment == other.alignment &&
                    sign == other.sign && alternate == other.alternate &&
                    width == other.width && thoudsandsSeperator == other.thoudsandsSeperator &&
@@ -128,7 +128,7 @@ namespace formatstring {
                    upperCase == other.upperCase;
         }
 
-        inline bool isNumberType() const {
+        inline bool isNumberType() const noexcept {
             switch (type) {
             case Bin:
             case Character:
@@ -147,7 +147,7 @@ namespace formatstring {
             }
         }
 
-        inline bool isIntegerType() const {
+        inline bool isIntegerType() const noexcept {
             switch (type) {
             case Bin:
             case Character:
@@ -161,7 +161,7 @@ namespace formatstring {
             }
         }
 
-        inline bool isFloatType() const {
+        inline bool isFloatType() const noexcept {
             switch (type) {
             case Exp:
             case Fixed:
@@ -175,7 +175,7 @@ namespace formatstring {
             }
         }
 
-        inline bool isStringType() const {
+        inline bool isStringType() const noexcept {
             switch (type) {
             case Character:
             case String:
@@ -188,12 +188,12 @@ namespace formatstring {
     };
 
     template<typename Char>
-    inline bool operator==(const BasicFormatSpec<Char>& lhs, const BasicFormatSpec<Char>& rhs) {
+    inline bool operator==(const BasicFormatSpec<Char>& lhs, const BasicFormatSpec<Char>& rhs) noexcept {
         return lhs.equals(rhs);
     }
 
     template<typename Char>
-    inline bool operator!=(const BasicFormatSpec<Char>& lhs, const BasicFormatSpec<Char>& rhs) {
+    inline bool operator!=(const BasicFormatSpec<Char>& lhs, const BasicFormatSpec<Char>& rhs) noexcept {
         return !lhs.equals(rhs);
     }
 

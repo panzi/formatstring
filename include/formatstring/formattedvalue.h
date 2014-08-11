@@ -56,128 +56,128 @@ namespace formatstring {
             return out.str();
         }
 
-        inline self_type& align(typename spec_type::Alignment alignment) {
+        inline self_type& align(typename spec_type::Alignment alignment) noexcept {
             m_spec.alignment = alignment;
             return *this;
         }
 
-        inline self_type& left() {
+        inline self_type& left() noexcept {
             m_spec.alignment = spec_type::Left;
             return *this;
         }
 
-        inline self_type& right() {
+        inline self_type& right() noexcept {
             m_spec.alignment = spec_type::Right;
             return *this;
         }
 
-        inline self_type& afterSign() {
+        inline self_type& afterSign() noexcept {
             m_spec.alignment = spec_type::AfterSign;
             return *this;
         }
 
-        inline self_type& center() {
+        inline self_type& center() noexcept {
             m_spec.alignment = spec_type::Center;
             return *this;
         }
 
-        inline self_type& type(typename spec_type::Type type) {
+        inline self_type& type(typename spec_type::Type type) noexcept {
             m_spec.type = type;
             return *this;
         }
 
-        inline self_type& bin() {
+        inline self_type& bin() noexcept {
             m_spec.type = spec_type::Bin;
             return *this;
         }
 
-        inline self_type& character() {
+        inline self_type& character() noexcept {
             m_spec.type = spec_type::Character;
             return *this;
         }
 
-        inline self_type& dec() {
+        inline self_type& dec() noexcept {
             m_spec.type = spec_type::Dec;
             return *this;
         }
 
-        inline self_type& oct() {
+        inline self_type& oct() noexcept {
             m_spec.type = spec_type::Oct;
             return *this;
         }
 
-        inline self_type& hex() {
+        inline self_type& hex() noexcept {
             m_spec.type = spec_type::Hex;
             return *this;
         }
 
-        inline self_type& exp() {
+        inline self_type& exp() noexcept {
             m_spec.type = spec_type::Exp;
             return *this;
         }
 
-        inline self_type& fixed() {
+        inline self_type& fixed() noexcept {
             m_spec.type = spec_type::Fixed;
             return *this;
         }
 
-        inline self_type& general() {
+        inline self_type& general() noexcept {
             m_spec.type = spec_type::General;
             return *this;
         }
 
-        inline self_type& precentage() {
+        inline self_type& precentage() noexcept {
             m_spec.type = spec_type::Percentage;
             return *this;
         }
 
-        inline self_type& str() {
+        inline self_type& str() noexcept {
             m_spec.type = spec_type::String;
             return *this;
         }
 
-        inline self_type& sign(typename spec_type::Sign sign) {
+        inline self_type& sign(typename spec_type::Sign sign) noexcept {
             m_spec.sign = sign;
             return *this;
         }
 
-        inline self_type& fill(char fill, int width) {
+        inline self_type& fill(char fill, int width) noexcept {
             m_spec.fill  = fill;
             m_spec.width = width;
             return *this;
         }
 
-        inline self_type& fill(char fill) {
+        inline self_type& fill(char fill) noexcept {
             m_spec.fill = fill;
             return *this;
         }
 
-        inline self_type& width(int width) {
+        inline self_type& width(int width) noexcept {
             m_spec.width = width;
             return *this;
         }
 
-        inline self_type& alt(bool alternate = true) {
+        inline self_type& alt(bool alternate = true) noexcept {
             m_spec.alternate = alternate;
             return *this;
         }
 
-        inline self_type& upper() {
+        inline self_type& upper() noexcept {
             m_spec.upperCase = true;
             return *this;
         }
 
-        inline self_type& lower() {
+        inline self_type& lower() noexcept {
             m_spec.upperCase = false;
             return *this;
         }
 
-        inline self_type& tdssep(bool thoudsandsSeperator = true) {
+        inline self_type& tdssep(bool thoudsandsSeperator = true) noexcept {
             m_spec.thoudsandsSeperator = thoudsandsSeperator;
             return *this;
         }
 
-        inline self_type& spec(const spec_type& spec) {
+        inline self_type& spec(const spec_type& spec) noexcept {
             m_spec = spec;
             return *this;
         }
@@ -192,21 +192,21 @@ namespace formatstring {
             return *this;
         }
 
-        inline const spec_type& spec() const {
+        inline const spec_type& spec() const noexcept {
             return m_spec;
         }
 
-        inline self_type& conversion(Conversion conv) {
+        inline self_type& conversion(Conversion conv) noexcept {
             m_conv = conv;
             return *this;
         }
 
-        inline self_type& repr() {
+        inline self_type& repr() noexcept {
             m_conv = ReprConv;
             return *this;
         }
 
-        inline Conversion conversion() const {
+        inline Conversion conversion() const noexcept {
             return m_conv;
         }
 
