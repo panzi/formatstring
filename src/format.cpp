@@ -252,7 +252,7 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
 }
 
 template<typename Char>
-void formatstring::parse_format(const Char* fmt, typename BasicFormatItem<Char>::List* items) {
+void formatstring::parse_format(const Char* fmt, BasicFormatItems<Char>* items) {
     // Format string similar to Python, but a bit more limited:
     // https://docs.python.org/3/library/string.html#format-string-syntax
     //
@@ -360,17 +360,17 @@ void formatstring::parse_spec(const Char* str, BasicFormatSpec<Char>* spec) {
     parse_spec_internal(str, str, spec);
 }
 
-template void parse_format<char>(const char* fmt, FormatItem::List *items);
+template void parse_format<char>(const char* fmt, FormatItems *items);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-template void parse_format<char16_t>(const char16_t* fmt, U16FormatItem::List *items);
+template void parse_format<char16_t>(const char16_t* fmt, U16FormatItems *items);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-template void parse_format<char32_t>(const char32_t* fmt, U32FormatItem::List *items);
+template void parse_format<char32_t>(const char32_t* fmt, U32FormatItems *items);
 #endif
 
-template void parse_format<wchar_t>(const wchar_t* fmt, WFormatItem::List *items);
+template void parse_format<wchar_t>(const wchar_t* fmt, WFormatItems *items);
 
 template FORMATSTRING_EXPORT void parse_spec<char>(const char* str, FormatSpec* spec);
 

@@ -33,7 +33,7 @@ namespace formatstring {
     class BasicBoundFormat;
 
     template<typename Char>
-    void parse_format(const Char* fmt, typename BasicFormatItem<Char>::List *items);
+    void parse_format(const Char* fmt, BasicFormatItems<Char> *items);
 
     template<typename Char>
     class FORMATSTRING_EXPORT BasicFormat {
@@ -41,7 +41,7 @@ namespace formatstring {
         typedef Char char_type;
 
         BasicFormat(const Char* fmt) : m_fmt() {
-            std::shared_ptr<typename BasicFormatItem<Char>::List> fmtptr = std::make_shared<typename BasicFormatItem<Char>::List>();
+            std::shared_ptr<BasicFormatItems<Char>> fmtptr = std::make_shared<BasicFormatItems<Char>>();
             parse_format(fmt, &*fmtptr);
             m_fmt = fmtptr;
         }
@@ -68,7 +68,7 @@ namespace formatstring {
         }
 
     private:
-        std::shared_ptr<const typename BasicFormatItem<Char>::List> m_fmt;
+        std::shared_ptr<const BasicFormatItems<Char>> m_fmt;
     };
 
     template<typename Char>
@@ -306,17 +306,17 @@ namespace formatstring {
     }
 #endif
 
-    extern template FORMATSTRING_EXPORT void parse_format<char>(const char* fmt, FormatItem::List *items);
+    extern template FORMATSTRING_EXPORT void parse_format<char>(const char* fmt, FormatItems *items);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-    extern template FORMATSTRING_EXPORT void parse_format<char16_t>(const char16_t* fmt, U16FormatItem::List *items);
+    extern template FORMATSTRING_EXPORT void parse_format<char16_t>(const char16_t* fmt, U16FormatItems *items);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    extern template FORMATSTRING_EXPORT void parse_format<char32_t>(const char32_t* fmt, U32FormatItem::List *items);
+    extern template FORMATSTRING_EXPORT void parse_format<char32_t>(const char32_t* fmt, U32FormatItems *items);
 #endif
 
-    extern template FORMATSTRING_EXPORT void parse_format<wchar_t>(const wchar_t* fmt, WFormatItem::List *items);
+    extern template FORMATSTRING_EXPORT void parse_format<wchar_t>(const wchar_t* fmt, WFormatItems *items);
 
     extern template class FORMATSTRING_EXPORT BasicFormat<char>;
     extern template class FORMATSTRING_EXPORT BasicBoundFormat<char>;

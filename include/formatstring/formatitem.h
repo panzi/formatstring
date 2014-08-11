@@ -14,22 +14,27 @@ namespace formatstring {
     class BasicFormatItem {
     public:
         typedef Char char_type;
-        typedef std::vector< std::unique_ptr< BasicFormatItem<Char> > > List;
 
         virtual ~BasicFormatItem() {}
         virtual void apply(std::basic_ostream<Char>& out, const BasicFormatters<Char>& formatters) const = 0;
     };
 
+    template<typename Char>
+    using BasicFormatItems = std::vector< std::unique_ptr< BasicFormatItem<Char> > >;
+
     typedef BasicFormatItem<char> FormatItem;
     typedef BasicFormatItem<wchar_t> WFormatItem;
-    typedef FormatItem::List FormatItems;
+    typedef BasicFormatItems<char> FormatItems;
+    typedef BasicFormatItems<wchar_t> WFormatItems;
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
     typedef BasicFormatItem<char16_t> U16FormatItem;
+    typedef BasicFormatItems<char16_t> U16FormatItems;
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
     typedef BasicFormatItem<char32_t> U32FormatItem;
+    typedef BasicFormatItems<char32_t> U32FormatItems;
 #endif
 }
 
