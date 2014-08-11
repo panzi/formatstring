@@ -202,7 +202,7 @@ namespace formatstring {
             return DummyBoundFormat<Char>();
         }
 
-        inline void apply(std::basic_ostream<Char>& out, const typename BasicFormatter<Char>::List& formatters) const {
+        inline void apply(std::basic_ostream<Char>& out, const BasicFormatters<Char>& formatters) const {
             (void)out;
             (void)formatters;
         }
@@ -262,6 +262,12 @@ namespace formatstring {
         return DummyBoundFormat<Char>();
     }
 
+    template<typename Char, typename... Args>
+    inline DummyBoundFormat<Char> debug(std::basic_string<Char>&& fmt, Args&&...) {
+        (void)fmt;
+        return DummyBoundFormat<Char>();
+    }
+
     template<typename Char>
     inline DummyFormat<Char> debug_compile(const std::basic_string<Char>& fmt) {
         (void)fmt;
@@ -282,6 +288,11 @@ namespace formatstring {
     template<typename Char, typename... Args>
     inline BasicBoundFormat<Char> debug(const Char* fmt, const Args&... args) {
         return BasicBoundFormat<Char>(fmt, args...);
+    }
+
+    template<typename Char, typename... Args>
+    inline BasicBoundFormat<Char> debug(std::basic_string<Char>& fmt, Args&&... args) {
+        return BasicBoundFormat<Char>(std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename Char>
