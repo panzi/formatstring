@@ -239,6 +239,7 @@ int main() {
     }
 
     std::cout << "{} {}\n"_fmt("foo",12);
+    std::cout << format("{{\n");
 
     return 0;
 }

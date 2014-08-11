@@ -40,8 +40,8 @@ namespace formatstring {
     template<typename Char, typename First, typename... Rest>
     inline void unpack_formatters(BasicFormatters<Char>& formatters, const First& first, const Rest&... rest);
 
-    template<typename Char, typename Last>
-    inline void unpack_formatters(BasicFormatters<Char>& formatters, const Last& last);
+    template<typename Char>
+    inline void unpack_formatters(BasicFormatters<Char>& formatters);
 
     template<typename Char, typename First, typename... Rest>
     inline void unpack_formatters(BasicFormatters<Char>& formatters, const First& first, const Rest&... rest) {
@@ -49,9 +49,9 @@ namespace formatstring {
         unpack_formatters<Char, Rest...>(formatters, rest...);
     }
 
-    template<typename Char, typename Last>
-    inline void unpack_formatters(BasicFormatters<Char>& formatters, const Last& last) {
-        formatters.emplace_back(format_traits<Char,Last>::make_formatter(last));
+    template<typename Char>
+    inline void unpack_formatters(BasicFormatters<Char>& formatters) {
+        (void)formatters;
     }
 
     template<typename Char, typename T,
