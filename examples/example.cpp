@@ -97,7 +97,7 @@ namespace formatstring {
 #endif
     // this way also derived classes from Example3 will be supported by this formatter
     template<typename Char, typename T>
-    struct format_traits<Char, T, if_derived< T, Example3<Char> > > {
+    struct format_traits<Char, T, for_derived< T, Example3<Char> > > {
         typedef Char char_type;
         typedef T value_type;
 

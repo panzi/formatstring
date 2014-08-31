@@ -252,7 +252,7 @@ static const Char* parse_spec_internal(const Char* fmt, const Char* ptr, BasicFo
 }
 
 template<typename Char>
-void formatstring::parse_format(const Char* fmt, BasicFormatItems<Char>* items) {
+BasicFormatItems<Char> formatstring::parse_format(const Char* fmt) {
     // Format string similar to Python, but a bit more limited:
     // https://docs.python.org/3/library/string.html#format-string-syntax
     //
@@ -269,6 +269,7 @@ void formatstring::parse_format(const Char* fmt, BasicFormatItems<Char>* items) 
     // precision         ::=  integer
     // type              ::=  "b" | "B" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "O" | "s" | "S" | "x" | "X" | "%" | "a" | "A"
 
+    BasicFormatItems<Char> items;
     const std::basic_string<Char> empty;
     std::size_t currentIndex = 0;
     std::basic_stringbuf<Char> buffer;
@@ -286,7 +287,7 @@ void formatstring::parse_format(const Char* fmt, BasicFormatItems<Char>* items) 
             }
             else {
                 if (buffer.in_avail() > 0) {
-                    items->emplace_back(new BasicStrFormatItem<Char>(buffer.str()));
+                    items.emplace_back(new BasicStrFormatItem<Char>(buffer.str()));
                     buffer.str(empty);
                 }
 
@@ -329,7 +330,7 @@ void formatstring::parse_format(const Char* fmt, BasicFormatItems<Char>* items) 
                     throw InvalidFormatStringException(ptr - fmt, "expected '}'");
                 }
 
-                items->emplace_back(new BasicValueFormatItem<Char>(index, conv, spec));
+                items.emplace_back(new BasicValueFormatItem<Char>(index, conv, spec));
             }
             break;
 
@@ -351,38 +352,42 @@ void formatstring::parse_format(const Char* fmt, BasicFormatItems<Char>* items) 
     }
 
     if (buffer.in_avail() > 0) {
-        items->emplace_back(new BasicStrFormatItem<Char>(buffer.str()));
+        items.emplace_back(new BasicStrFormatItem<Char>(buffer.str()));
     }
+
+    return std::move(items);
 }
 
 template<typename Char>
-void formatstring::parse_spec(const Char* str, BasicFormatSpec<Char>* spec) {
-    parse_spec_internal(str, str, spec);
+BasicFormatSpec<Char> formatstring::parse_spec(const Char* str) {
+    BasicFormatSpec<Char> spec;
+    parse_spec_internal(str, str, &spec);
+    return std::move(spec);
 }
 
-template void parse_format<char>(const char* fmt, FormatItems *items);
+template FormatItems parse_format<char>(const char* fmt);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-template void parse_format<char16_t>(const char16_t* fmt, U16FormatItems *items);
+template U16FormatItems parse_format<char16_t>(const char16_t* fmt);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-template void parse_format<char32_t>(const char32_t* fmt, U32FormatItems *items);
+template U32FormatItems parse_format<char32_t>(const char32_t* fmt);
 #endif
 
-template void parse_format<wchar_t>(const wchar_t* fmt, WFormatItems *items);
+template WFormatItems parse_format<wchar_t>(const wchar_t* fmt);
 
-template FORMATSTRING_EXPORT void parse_spec<char>(const char* str, FormatSpec* spec);
+template FORMATSTRING_EXPORT FormatSpec parse_spec<char>(const char* str);
 
 #ifdef FORMATSTRING_CHAR16_SUPPORT
-template FORMATSTRING_EXPORT void parse_spec<char16_t>(const char16_t* str, U16FormatSpec* spec);
+template FORMATSTRING_EXPORT U16FormatSpec parse_spec<char16_t>(const char16_t* str);
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-template FORMATSTRING_EXPORT void parse_spec<char32_t>(const char32_t* str, U32FormatSpec* spec);
+template FORMATSTRING_EXPORT U32FormatSpec parse_spec<char32_t>(const char32_t* str);
 #endif
 
-template FORMATSTRING_EXPORT void parse_spec<wchar_t>(const wchar_t* str, WFormatSpec* spec);
+template FORMATSTRING_EXPORT WFormatSpec parse_spec<wchar_t>(const wchar_t* str);
 
 template class BasicFormat<char>;
 template class BasicBoundFormat<char>;

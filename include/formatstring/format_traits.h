@@ -19,7 +19,7 @@
 namespace formatstring {
 
     template<typename Derived, typename Base>
-    using if_derived = typename std::enable_if<std::is_base_of<Base, Derived>::value>::type;
+    using for_derived = typename std::enable_if<std::is_base_of<Base, Derived>::value>::type;
 
     // ---- fallback ----
     template<typename Char, typename T, typename ENABLE>
