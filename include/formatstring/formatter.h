@@ -32,8 +32,8 @@ namespace formatstring {
 #endif
 
 #ifdef FORMATSTRING_CHAR32_SUPPORT
-    typedef BasicFormatter<char32_t> U16Formatter;
-    typedef BasicFormatters<char32_t> U16Formatters;
+    typedef BasicFormatter<char32_t> U32Formatter;
+    typedef BasicFormatters<char32_t> U32Formatters;
 #endif
 
     template<typename Char, typename T,
