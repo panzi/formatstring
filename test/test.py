@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import re
@@ -23,7 +23,7 @@ HAS_REPR = re.compile(r'{\d*!r[^}]*}')
 
 def crepr(val):
 	t = type(val)
-	if t in (int, long):
+	if t is int:
 		if t < -0x7fffffff or t > 0x7fffffff:
 			return str(val)+'L'
 		else:
